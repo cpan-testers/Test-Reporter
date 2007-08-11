@@ -6,6 +6,7 @@ Makefile.PL
 META.yml
 README
 SIGNATURE
+TODO
 bin/cpantest
 lib/Test/Reporter.pm
 lib/Test/Reporter.pod

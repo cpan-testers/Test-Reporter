@@ -1,5 +1,12 @@
 Revision history for Perl extension Test::Reporter.
 
+1.23  Sun Dec 26 10:17:00 2004
+    - add cpantest -from and -dump
+    - update T:R->write() to accept a second argument, filehandle object
+    - ucfirst'd globals that were lowercase
+    - fix pod man3 extension
+    - make tests autodetect release version
+
 1.22  Sun Dec 26 09:23:00 2004
     - restructured mx, recipient filter logic
     - remove commented $VERSION to fix mlc 0.06 (cpanplus <= 0.050_04)

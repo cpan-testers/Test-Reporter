@@ -191,6 +191,11 @@ On the machine you are submitting from:
   my $reporter;
   $reporter = Test::Reporter->new()->read('pass.Test-Reporter-1.16.i686-linux.2.2.16.1046685296.14961.rpt')->send() || die $reporter->errstr(); # wrap in an opendir if you've a lot to submit
 
+write() also accepts an optional filehandle argument:
+
+  my $fh; open $fh, '>-';  # create a STDOUT filehandle object
+  $reporter->write($fh);   # prints the report to STDOUT
+
 =back
 
 =head1 CAVEATS

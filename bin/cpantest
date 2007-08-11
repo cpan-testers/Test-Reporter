@@ -19,14 +19,14 @@ use strict;
 use Cwd;
 use Getopt::Long;
 use File::Temp;
-use Test::Reporter;
+use Test::Reporter 1.23;
 use vars qw(
 	$VERSION $Grade $Package $No_comment $Automatic $Comment_text $Comment_file
-	$MacMPW $MacApp %Grades $CC $Report $fh $Subject $Reporter
+	$MacMPW $MacApp %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump
 );
 
-($VERSION)     = '$Revision: 1.7 $' =~ /\s+(\d+\.\d+)\s+/;
-($fh, $Report) = File::Temp::tempfile(UNLINK => 1);
+$VERSION       = 1.8;
+($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
 $MacMPW        = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
 $MacApp        = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
 $Reporter      = Test::Reporter->new();
@@ -46,8 +46,13 @@ $Reporter      = Test::Reporter->new();
 &get_package() if not $Package;
 &get_subject();
 &get_via();
-&confirm_send() if not $Automatic;
-&send();
+if ($Dump) {
+	my $fh; open($fh, '>-') or die "Can't open STDOUT: $!";
+	print $Reporter->write($fh);
+} else {
+	&confirm_send() if not $Automatic;
+	&send();
+}
 
 sub DoMacOptions {
 	require File::Basename;
@@ -59,6 +64,7 @@ sub DoMacOptions {
 	$Package    = MacPerl::Ask('Package Name?', $Package);
 	$Grade      = MacPerl::Pick('What Grade?', qw(pass fail unknown na));
 	$No_comment = MacPerl::Answer('Comment on submission?', qw(No Yes));
+	$From	    = MacPerl::Ask('From what address?');
 	$CC         = MacPerl::Ask('Cc: to address?');
 	$Automatic  = 1;
 }
@@ -69,7 +75,8 @@ sub usage {
 	print "Error:  $message\n" if defined $message;
 	print "Usage:\n";
 	print "  cpantest -g grade [ -nc ] [ -auto ] [ -p package ]\n";
-	print "           [ -t text | -f file ] [ email-addresses ]\n";
+	print "           [ -t text | -f file ] [ -from user\@example.com ]\n";
+	print "           [ -dump | email-addresses ]\n";
 	print "  -g grade  Indicates the status of the tested package.\n";
 	print "            Possible values for grade are:\n";
 
@@ -77,12 +84,14 @@ sub usage {
 		printf "              %-10s  %s\n", $_, $Grades{$_};
 	}
 
+	print "  -from     Specify the From: address.\n";
 	print "  -t        Specify a short comment.\n";
-	print "  -f        Specify a file comtaining comments.\n";
+	print "  -f        Specify a file containing comments.\n";
 	print "  -p        Specify the name of the distribution tested.\n";
 	print "  -nc       No comment; you will not be prompted to comment on\n";
 	print "            the package.\n";
 	print "  -auto     Autosubmission (non-interactive); implies -nc.\n";
+	print "  -dump     Print the report instead of emailing it.\n";
 
 	exit 1;
 }
@@ -99,11 +108,14 @@ sub get_opts {
 			'auto', \$Automatic,
 			't=s',  \$Comment_text,
 			'f=s',  \$Comment_file,
+			'from=s',  \$From,
+			'dump', \$Dump,
 		) or usage();
 
 		$CC         = join ' ', @ARGV;
 		$No_comment = 1 if ($Automatic && !$Comment_text && !$Comment_file);
 	}
+	$Reporter->from($From) if $From;
 }
 
 sub check_opts {
@@ -126,8 +138,8 @@ sub set_comment {
 	my $comment = $Comment_text ?  $Comment_text : '[ insert comments here ]';
 
 	$Reporter->comments($comment);
-	print $fh $Reporter->report();
-	close $fh;
+	print $Tempfile $Reporter->report();
+	close $Tempfile;
 }
 
 # Given an author identifier (either a CPAN authorname or a proper

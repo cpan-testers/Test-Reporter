@@ -21,11 +21,11 @@ use Net::SMTP;
 use File::Temp;
 use Test::Reporter::Mail::Util;
 use Test::Reporter::Date::Format;
-use vars qw($VERSION $AUTOLOAD $fh $Report $MacMPW $MacApp $dns $domain $send);
+use vars qw($VERSION $AUTOLOAD $Tempfile $Report $MacMPW $MacApp $DNS $Domain $Send);
 
 $MacMPW    = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
 $MacApp    = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
-$VERSION = '1.22';
+$VERSION = '1.24';
 
 local $^W;
 
@@ -189,18 +189,18 @@ sub edit_comments {
 	my $self = shift;
 	warn __PACKAGE__, ": edit_comments\n" if $self->debug();
 
-	($fh, $Report) = File::Temp::tempfile(UNLINK => 1);
+	($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
 
-	print $fh $self->{_comments};
+	print $Tempfile $self->{_comments};
 
 	$self->_start_editor();
 
 	my $comments;
 	{
 		local $/;
-		open FH, $Report or die __PACKAGE__, ": Can't open comment file: $!";
+		open FH, $Report or die __PACKAGE__, ": Can't open comment file '$Report': $!";
 		$comments = <FH>;
-		close FH or die __PACKAGE__, ": Can't close comment file: $!";
+		close FH or die __PACKAGE__, ": Can't close comment file '$Report': $!";
 	}
 
 	chomp $comments;
@@ -243,15 +243,21 @@ sub write {
 
 	$distribution =~ s/[^A-Za-z0-9\.\-]+//g;
 
-	my $file = "$dir/$grade.$distribution.$Config{archname}.$Config{osvers}.${\(time)}.$$.rpt";
-
-	open REPORT, ">$file" or die __PACKAGE__, ": Can't open report file: $!";
-	print REPORT "From: $from\n";
-	print REPORT "Subject: $subject\n";
-	print REPORT "Report: $report";
-	close REPORT or die __PACKAGE__, ": Can't close report file: $!";
-
-	return $file;
+	my($fh, $file); unless ($fh = $_[0]) {
+		$file = "$dir/$grade.$distribution.$Config{archname}.$Config{osvers}.${\(time)}.$$.rpt";
+		warn $file if $self->debug();
+		open $fh, ">$file" or die __PACKAGE__, ": Can't open report file '$file': $!";
+	}
+	print $fh "From: $from\n";
+	print $fh "Subject: $subject\n";
+	print $fh "Report: $report";
+	unless ($_[0]) {
+		close $fh or die __PACKAGE__, ": Can't close report file '$file': $!";
+		warn $file if $self->debug();
+		return $file;
+	} else {
+		return $fh;
+	}
 }
 
 sub read {
@@ -262,9 +268,9 @@ sub read {
 
 	{
 		local $/;
-		open REPORT, $file or die __PACKAGE__, ": Can't open report file: $!";
+		open REPORT, $file or die __PACKAGE__, ": Can't open report file '$file': $!";
 		$buffer = <REPORT>;
-		close REPORT or die __PACKAGE__, ": Can't close report file: $!";
+		close REPORT or die __PACKAGE__, ": Can't close report file '$file': $!";
 	}
 
 	if (my ($from, $subject, $report) = $buffer =~ /^From:\s(.+)Subject:\s(.+)Report:\s(.+)$/s) {
@@ -496,30 +502,30 @@ sub _have_net_dns {
 	my $self = shift;
 	warn __PACKAGE__, ": _have_net_dns\n" if $self->debug();
 
-	return $dns if defined $dns;
+	return $DNS if defined $DNS;
 	return 0 if FAKE_NO_NET_DNS;
 
-	$dns = eval {require Net::DNS};
+	$DNS = eval {require Net::DNS};
 }
 
 sub _have_net_domain {
 	my $self = shift;
 	warn __PACKAGE__, ": _have_net_domain\n" if $self->debug();
 
-	return $domain if defined $domain;
+	return $Domain if defined $Domain;
 	return 0 if FAKE_NO_NET_DOMAIN;
 
-	$domain = eval {require Net::Domain};
+	$Domain = eval {require Net::Domain};
 }
 
 sub _have_mail_send {
 	my $self = shift;
 	warn __PACKAGE__, ": _have_mail_send\n" if $self->debug();
 
-	return $send if defined $send;
+	return $Send if defined $Send;
 	return 0 if FAKE_NO_MAIL_SEND;
 
-	$send = eval {require Mail::Send};
+	$Send = eval {require Mail::Send};
 }
 
 sub _start_editor_mac {
@@ -530,7 +536,7 @@ sub _start_editor_mac {
 
 	use vars '%Application';
 	for my $mod (qw(Mac::MoreFiles Mac::AppleEvents::Simple Mac::AppleEvents)) {
-		eval qq(require $mod) or die __PACKAGE__, ": Can't load $mod.\n";
+		eval qq(require $mod) or die __PACKAGE__, ": Can't load $mod; \$\@: $@\n";
 		eval qq($mod->import());
 	}
 

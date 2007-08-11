@@ -22,7 +22,7 @@ WriteMakefile(
 	},
 	'VERSION_FROM' => 'lib/Test/Reporter.pm',
 	'MAN3PODS' => {
-		'lib/Test/Reporter.pod' => '$(INST_MAN3DIR)/Test::Reporter.3',
+		'lib/Test/Reporter.pod' => '$(INST_MAN3DIR)/Test::Reporter.$(MAN3EXT)',
 	},
 	'dist' => {
 		'COMPRESS' => 'gzip --best',
