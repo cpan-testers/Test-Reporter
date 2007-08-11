@@ -11,7 +11,7 @@ use strict;
 use vars qw($VERSION @ISA @EXPORT $mailaddress $maildomain $realname);
 use Exporter;
 
-$VERSION = '1.58';
+$VERSION = '1.59';
 @ISA = qw(Exporter);
 @EXPORT = qw(_realname _maildomain _mailaddress $mailaddress $maildomain $realname);
 
@@ -67,11 +67,15 @@ sub _maildomain {
 		}
 
 		close(CF) || die $!;
-		$maildomain = $var{j} if defined $var{j};
-		$maildomain = $var{M} if defined $var{M};
+		my $domain;
+		$domain = $var{j} if defined $var{j};
+		$domain = $var{M} if defined $var{M};
 
-		$maildomain = $1
-			if($maildomain && $maildomain =~ m/([A-Za-z0-9](?:[\.\-A-Za-z0-9]+))/ );
+		$domain = $1
+			if($domain && $domain =~ m/([A-Za-z0-9](?:[\.\-A-Za-z0-9]+))/ );
+
+		$maildomain = $domain
+		    unless $^O eq 'darwin' && $domain =~ /\.local$/;
 
 		return $maildomain if defined $maildomain;
 	}
@@ -79,8 +83,10 @@ sub _maildomain {
 	if (open(CF,"/usr/lib/smail/config")) {
 		while (<CF>) {
 			if (/\A\s*hostnames?\s*=\s*(\S+)/) {
-				$maildomain = (split(/:/,$1))[0];
-				last;
+				my $domain = (split(/:/,$1))[0];
+				$maildomain = $domain
+				    unless $^O eq 'darwin' && $domain =~ /\.local$/;
+				last if $maildomain;
 			}
 		}
 		close(CF) || die $!;
@@ -94,15 +100,19 @@ sub _maildomain {
 		my $smtp = Net::SMTP->new($host);
 
 		if (defined $smtp) {
-			$maildomain = $smtp->domain;
+			my $domain = $smtp->domain;
 			$smtp->quit;
-			last;
+			$maildomain = $domain
+			    unless $^O eq 'darwin' && $domain =~ /\.local$/;
+			last if $maildomain;
 		}
 	}
 
 	unless (defined $maildomain) {
 		if ($self->_have_net_domain()) {
-			$maildomain = Net::Domain::domainname();
+			my $domain = Net::Domain::domainname();
+			$maildomain = $domain
+			    unless $^O eq 'darwin' && $domain =~ /\.local$/;
 		}
 	}
 

@@ -1,5 +1,12 @@
 Revision history for Perl extension Test::Reporter.
 
+1.22  Sun Dec 26 09:23:00 2004
+    - restructured mx, recipient filter logic
+    - remove commented $VERSION to fix mlc 0.06 (cpanplus <= 0.050_04)
+
+1.21  Sun Dec 26 07:57:00 2004
+    - fixed local hostname logic to skip /\.local$/ domains under OS X
+
 1.20  Wed Mar 05 04:03:07 2003
     - fixed a minor bug with read()
 

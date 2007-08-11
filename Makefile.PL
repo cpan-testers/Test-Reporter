@@ -35,4 +35,7 @@ WriteMakefile(
 			AUTHOR => 'Adam J. Foxson <afoxson@pobox.com>',
 		) : ()
 	),
+	'clean' => {
+		'FILES' => '*.rpt',
+	},
 );

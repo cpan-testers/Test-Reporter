@@ -1,8 +1,11 @@
 Changes
 INSTALL
 MANIFEST			This list of files
+MANIFEST.SKIP
 Makefile.PL
+META.yml
 README
+SIGNATURE
 bin/cpantest
 lib/Test/Reporter.pm
 lib/Test/Reporter.pod

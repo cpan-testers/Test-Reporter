@@ -25,7 +25,7 @@ use vars qw($VERSION $AUTOLOAD $fh $Report $MacMPW $MacApp $dns $domain $send);
 
 $MacMPW    = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
 $MacApp    = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
-($VERSION) = '$Revision: 1.20 $' =~ /\s+(\d+\.\d+)\s+/;
+$VERSION = '1.22';
 
 local $^W;
 
@@ -351,41 +351,47 @@ sub _send_smtp {
 	my $recipients;
 	my $smtp;
 
-	for my $recipient (sort @recipients) {
-		if ($recipient =~ /(?:perl|cpan)\.org$/) {
-			push @tmprecipients, $recipient;
-		}
-		else {
-			push @bad, $recipient;
-		}
-	}
-
-	if (scalar @bad  > 0) {
-		warn __PACKAGE__, ": Will not attempt to cc the following recipients since perl.org MX's will not relay for them. Either install Mail::Send, or only cc address ending in cpan.org or perl.org: ${\(join ', ', @bad)}.\n";
-	}
-
-	@recipients = @tmprecipients;
-
-	for my $mx (@{$self->{_mx}}) {
-		$smtp = Net::SMTP->new((@{$self->{_mx}})[0], Hello => $helo,
+	my $mx;
+	for my $server (@{$self->{_mx}}) {
+		$smtp = Net::SMTP->new($server, Hello => $helo,
 			Timeout => $self->{_timeout}, Debug => $debug);
 
-		last if defined $smtp;
+		if (defined $smtp) {
+		    $mx = $server;
+		    last;
+		}
+
 		$fail++;
 	}
 
-	if ($fail == scalar @{$self->{_mx}}) {
+	unless ($mx && $smtp) {
 		$self->errstr(__PACKAGE__ . ': Unable to connect to any MX\'s');
 		return 0;
 	}
 
-	$via = ', via ' . $via if $via;
-
 	if (@recipients) {
+		if ($mx =~ /(?:^|\.)(?:perl|cpan)\.org$/) {
+			for my $recipient (sort @recipients) {
+			    if ($recipient =~ /(?:@|\.)(?:perl|cpan)\.org$/) {
+				    push @tmprecipients, $recipient;
+			    } else {
+				    push @bad, $recipient;
+			    }
+			}
+
+			if (@bad) {
+				warn __PACKAGE__, ": Will not attempt to cc the following recipients since perl.org MX's will not relay for them. Either install Mail::Send, use other MX's, or only cc address ending in cpan.org or perl.org: ${\(join ', ', @bad)}.\n";
+			}
+
+			@recipients = @tmprecipients;
+		}
+
 		$recipients = join ', ', @recipients;
 		chomp $recipients;
 		chomp $recipients;
 	}
+
+	$via = ', via ' . $via if $via;
 
 	$success += $smtp->mail($from);
 	$success += $smtp->to($self->{_address});
