@@ -1,4 +1,4 @@
-# $Id: Reporter.pm 68 2007-06-27 18:11:07Z afoxson $
+# $Id: Reporter.pm 74 2007-07-18 08:57:05Z afoxson $
 # $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/lib/Test/Reporter.pm $
 
 # Test::Reporter - sends test results to cpan-testers@perl.org
@@ -27,7 +27,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.29_04';
+$VERSION = '1.30';
 
 local $^W = 1;
 
@@ -156,7 +156,7 @@ sub report {
         $report .= "\n--\n" . $self->{_comments} . "\n--\n\n";
     }
 
-    $report .= $self->{_perl_version}->{_myconfig}; # XXX . "\n";
+    $report .= $self->{_perl_version}->{_myconfig};
 
     chomp $report;
     chomp $report;
@@ -683,6 +683,10 @@ sub _maildomain {
 
     unless (defined $domain) {
         if ($self->_have_net_domain()) {
+            ###################################################################
+            # The below statement might possibly exhibit intermittent blocking
+            # behavior. Be advised!
+            ###################################################################
             $domain = Net::Domain::domainname();
             undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
         }
@@ -941,6 +945,20 @@ write() also accepts an optional filehandle argument:
 
   my $fh; open $fh, '>-';  # create a STDOUT filehandle object
   $reporter->write($fh);   # prints the report to STDOUT
+
+=item * B<message_id>
+
+Returns an automatically generated Message ID. This Message ID will later
+be included as an outgoing mail header in the test report e-mail. This was
+included to conform to local mail policies at perl.org. This method courtesy
+of Email::MessageID.
+
+=item * B<perl_version>
+
+Returns a hashref containing _archname, _osvers, and _myconfig based upon the
+perl that you are using. Alternatively, you may supply a different perl (path
+to the binary) as an argument, in which case the supplied perl will be used as
+the basis of the above data.
 
 =back
 

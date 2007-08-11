@@ -1,7 +1,11 @@
-# $Id: Changes 68 2007-06-27 18:11:07Z afoxson $
+# $Id: Changes 72 2007-07-18 08:46:14Z afoxson $
 # $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/Changes $
 
 Revision history for Perl extension Test::Reporter.
+
+1.30    Wed Jul 18 04:50:00 EDT 2007
+        - Public release of all activity against 1.29_0* (see below)
+        - Additionally, updated some documentation and added more tests
 
 1.29_04  Wed Jun 27 13:20:00 CDT 2007
     - Added t/0-signature.t to test the SIGNATURE
