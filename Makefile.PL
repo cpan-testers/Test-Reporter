@@ -1,4 +1,4 @@
-# $Id: Makefile.PL 30 2006-09-05 05:43:50Z afoxson $
+# $Id: Makefile.PL 63 2007-06-27 07:21:12Z afoxson $
 # $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/Makefile.PL $
 
 use ExtUtils::MakeMaker;
@@ -28,4 +28,5 @@ WriteMakefile(
     'clean' => {
         'FILES' => '*.rpt',
     },
+    LICENSE => 'perl',
 );

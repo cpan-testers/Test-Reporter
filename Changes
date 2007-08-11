@@ -1,7 +1,11 @@
-# $Id: Changes 60 2007-06-26 20:57:10Z afoxson $
+# $Id: Changes 64 2007-06-27 07:27:32Z afoxson $
 # $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/Changes $
 
 Revision history for Perl extension Test::Reporter.
+
+1.29_03  Wed Jun 27 02:30:00 CDT 2007
+    - We now explicitly specify the license (same terms as perl itself) in the
+      Makefile.PL, which eventually makes it into the auto-generated META.yml
 
 1.29_02  Tue Jun 26 16:00:00 CDT 2007
     - Fixed a portability bug in t/reporter.t. Reported by David Golden.

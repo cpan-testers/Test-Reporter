@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: cpantest 60 2007-06-26 20:57:10Z afoxson $
+# $Id: cpantest 64 2007-06-27 07:27:32Z afoxson $
 # $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/bin/cpantest $
 
 # cpantest - sends test results to cpan-testers@perl.org
@@ -25,7 +25,7 @@ use vars qw(
     %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump $Perl_version
 );
 
-$VERSION       = '1.29_02';
+$VERSION       = '1.29_03';
 ($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
 $Reporter      = Test::Reporter->new();
 %Grades        = (
