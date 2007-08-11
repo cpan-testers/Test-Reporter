@@ -1,5 +1,8 @@
 Revision history for Perl extension Test::Reporter.
 
+1.27  Mon Jan 17 15:51:00 2005
+    - don't try to use Mail::Send on Windows
+
 1.26  Thu Dec 30 19:03:00 2004
     - add support for a user-specified suffix in edit_comments()
     - add a suffix of '.txt' to the tempfile when editing comments

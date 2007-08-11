@@ -25,7 +25,7 @@ use vars qw($VERSION $AUTOLOAD $Tempfile $Report $MacMPW $MacApp $DNS $Domain $S
 
 $MacMPW    = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
 $MacApp    = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
-$VERSION = '1.26';
+$VERSION = '1.27';
 
 local $^W;
 
@@ -231,7 +231,7 @@ sub send {
 
 	return unless $self->_verify();
 
-	if ($self->_have_mail_send()) {
+	if ($^O !~ /^(?:cygwin|MSWin32)$/ && $self->_have_mail_send()) {
 		return $self->_mail_send(@recipients);
 	}
 	else {
