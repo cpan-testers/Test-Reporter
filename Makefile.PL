@@ -21,9 +21,6 @@ WriteMakefile(
 		'File::Spec' => 0,
 	},
 	'VERSION_FROM' => 'lib/Test/Reporter.pm',
-	'MAN3PODS' => {
-		'lib/Test/Reporter.pod' => '$(INST_MAN3DIR)/Test::Reporter.$(MAN3EXT)',
-	},
 	'dist' => {
 		'COMPRESS' => 'gzip --best',
 		'SUFFIX' => '.gz',
@@ -31,7 +28,7 @@ WriteMakefile(
 	EXE_FILES => ['bin/cpantest'],
 	(   
 		$] >= 5.005 ?  (   
-			ABSTRACT_FROM => 'lib/Test/Reporter.pod',
+			ABSTRACT_FROM => 'lib/Test/Reporter.pm',
 			AUTHOR => 'Adam J. Foxson <afoxson@pobox.com>',
 		) : ()
 	),

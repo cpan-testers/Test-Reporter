@@ -9,7 +9,6 @@ SIGNATURE
 TODO
 bin/cpantest
 lib/Test/Reporter.pm
-lib/Test/Reporter.pod
 lib/Test/Reporter/Date/Format.pm
 lib/Test/Reporter/Mail/Util.pm
 lib/Test/Reporter/Time/Zone.pm
