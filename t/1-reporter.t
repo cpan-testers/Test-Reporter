@@ -1,8 +1,5 @@
 #!/usr/bin/perl -w
 
-# $Id: 1-reporter.t 67 2007-06-27 17:57:42Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/t/1-reporter.t $
-
 use strict;
 use FileHandle;
 use Test;

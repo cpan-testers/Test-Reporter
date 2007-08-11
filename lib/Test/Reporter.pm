@@ -1,6 +1,3 @@
-# $Id: Reporter.pm 74 2007-07-18 08:57:05Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/lib/Test/Reporter.pm $
-
 # Test::Reporter - sends test results to cpan-testers@perl.org
 # Copyright (c) 2003 Adam J. Foxson. All rights reserved.
 

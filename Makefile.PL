@@ -1,6 +1,3 @@
-# $Id: Makefile.PL 68 2007-06-27 18:11:07Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/Makefile.PL $
-
 use ExtUtils::MakeMaker;
 
 WriteMakefile(

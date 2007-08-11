@@ -1,8 +1,5 @@
 #!/usr/bin/perl -w
 
-# $Id: cpantest 73 2007-07-18 08:47:25Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/bin/cpantest $
-
 # cpantest - sends test results to cpan-testers@perl.org
 # Copyright (c) 2003 Adam J. Foxson. All rights reserved.
 # Copyright (c) 2002 Autrijus Tang. All rights reserved.
