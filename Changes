@@ -1,4 +1,35 @@
 Revision history for Perl extension Test::Reporter.
 
+1.16  Tue Feb 25 04:00:00 2003
+    - abstract now matches PAUSE meta-data for this distribution
+    - better POD documentation
+    - header pass-through for X-Reported-Via, via via() -- this is useful for
+      third-party distributions, like CPANPLUS, that use Test::Reporter
+    - added 'debug' get/set method -- this is extremely verbose and primarily
+      of use for debugging Test::Reporter itself
+    - added 'address' get/set method -- specifies the e-mail address that the
+      reports should be sent to -- you shouldn't need this unless the CPAN
+      Tester's change the e-mail address to send report's to
+    - added 'from' get/set method -- specifies the e-mail address of the
+      individual doing the reporting -- you generally shouldn't need this as
+      Test::Reporter tries very hard to guess your e-mail address automatically
+    - added 'mx' get/set method -- specifies the MX's for perl.org -- you
+      really shouldn't need to use this unless the hardcoded MX's have
+      become wrong and you don't have Net::DNS installed
+    - the constructor now takes named parameters
+    - we now use Net::DNS to get MX's if Net::DNS is available
+    - we now use Net::Domain to better auto-guess the reporter's email address
+    - we now use Mail::Send to send reports, if it's available
+    - now cycles through all available MX servers, when using Net::SMTP
+    - added bin/cpantest
+	- T::R now allows testers to edit the report interactively via the
+      edit_comments() method
+    - T::R report's have been made less susceptible to being marked as spam
+    - "can't call method "mail" on an undefined value" bug fixed
+    - doubled the number of tests
+    - memoized certain methods
+    - bundling Date::Format and Time::Zone to assist in SMTP sends (for 'Date')
+    - bundling an updated Mail::Util
+
 1.13  Sun Aug 12 03:20:08 2002
     - initial beta release

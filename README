@@ -1,5 +1,5 @@
 NAME
-    Test::Reporter - reports test results to the CPAN testing service
+    Test::Reporter - sends test results to cpan-testers@perl.org
 
 SYNOPSIS
       use Test::Reporter;
@@ -17,21 +17,32 @@ SYNOPSIS
       $reporter->grade('fail');
       $reporter->distribution('Mail-Freshmeat-1.20');
       $reporter->comments('output of a failed make test goes here...');
-      $reporter->send('afoxson@pobox.com') || die $reporter->errstr();
+      $reporter->edit_comments(); # if you want to edit comments in an editor
+      $reporter->send('afoxson@cpan.org') || die $reporter->errstr();
 
-      NOTE: THIS VERSION OF Test::Reporter SHOULD BE CONSIDERED BETA.
-      THE INTERFACE MAY CHANGE.
+      # or
+
+      my $reporter = Test::Reporter->new(
+          grade => 'fail',
+          distribution => 'Mail-Freshmeat-1.20',
+          from => 'whoever@wherever.net (Whoever Wherever)',
+          comments => 'output of a failed make test goes here...',
+          via => 'CPANPLUS X.Y.Z',
+      );
+      $reporter->send() || die $reporter->errstr();
 
 DESCRIPTION
     Test::Reporter reports the test results of any given distribution to the
     CPAN testing service. See http://testers.cpan.org/ for details.
 
-  METHODS
+    Test::Reporter goes to extreme lengths to be compatible with any version
+    of perl since 5.005 and most all platforms.
 
+METHODS
     * new
-        This constructor returns a Test::Reporter object. It currently
-        accepts no parameters, but will likely take named parameters in a
-        future version.
+        This constructor returns a Test::Reporter object. It will optionally
+        accept named parameters for: mx, address, grade, distribution, from,
+        comments, via, timeout, and debug.
 
     * subject
         Returns the subject line of a report, i.e. "PASS Mail-Freshmeat-1.20
@@ -45,19 +56,25 @@ DESCRIPTION
         make and expect them to be included in the report.
 
     * comments
-        Gets or sets the comments on the test report. This is optional, and
-        most commonly used for distributions that did not pass a 'make
-        test'.
+        Optional. Gets or sets the comments on the test report. This is most
+        commonly used for distributions that did not pass a 'make test'.
+
+    * edit_comments
+        Optional. Allows one to interactively edit the comments within a
+        text editor. comments() doesn't have to be first specified, but it
+        will work properly if it was.
 
     * errstr
         Returns an error message describing why something failed. You must
-        check errstr() on a send() in order to be guaranteed delivery.
+        check errstr() on a send() in order to be guaranteed delivery. This
+        is optional if you don't intend to use Test::Reporter to send
+        reports via e-mail, see 'send' below for more information.
 
     * from
-        Gets or sets the e-mail address of the individual submitting the
-        test report, i.e. "Adam J. Foxson <afoxson@pobox.com>". This is
-        mostly of use to testers running under Windows, since Test::Reporter
-        will usually figure this out automatically.
+        Optional. Gets or sets the e-mail address of the individual
+        submitting the test report, i.e. "afoxson@pobox.com (Adam Foxson)".
+        This is mostly of use to testers running under Windows, since
+        Test::Reporter will usually figure this out automatically.
 
     * grade
         Gets or sets the success or failure of the distributions's 'make
@@ -78,29 +95,88 @@ DESCRIPTION
     * send
         Sends the test report to cpan-testers@perl.org and cc's the e-mail
         to the specified recipients, if any. If you do specify recipients to
-        be cc'd be sure that you use the author's @cpan.org address
-        otherwise they will not be delivered.
+        be cc'd and you do not have Mail::Send installed be sure that you
+        use the author's @cpan.org address otherwise they will not be
+        delivered. You must check errstr() on a send() in order to be
+        guaranteed delivery. Technically, this is optional, as you may use
+        Test::Reporter to only obtain the 'subject' and 'report' without
+        sending an e-mail at all, although that would be unusual.
 
     * timeout
-        Gets or sets the timeout value for the submission of test reports.
+        Optional. Gets or sets the timeout value for the submission of test
+        reports. Default is 120 seconds.
 
-TODO
-      - More detailed error messages and reporting.
-      - More tests.
-      - Possibly use Net::DNS to get MX's for perl.org.
-      - Cycle through all available MX servers, instead of just the first.
-      - Encoding of data may be necessary.
-      - Allow the constructor to take named parameters.
+    * via
+        Optional. Gets or sets the value that will be appended to
+        X-Reported-Via, generally this is useful for distributions that use
+        Test::Reporter to report test results. This would be something like
+        "CPANPLUS 0.036".
+
+    * debug
+        Optional. Gets or sets the value that will turn debugging on or off.
+        Debug messages are sent to STDERR. 1 for on, 0 for off. Debugging
+        generates very verbose output and is useful mainly for finding bugs
+        in Test::Reporter itself.
+
+    * address
+        Optional. Gets or sets the e-mail address that the reports will be
+        sent to. By default, this is set to cpan-testers@perl.org. You
+        shouldn't need this unless the CPAN Tester's change the e-mail
+        address to send report's to.
+
+    * mx
+        Optional. Gets or sets the mail exchangers that will be used to send
+        the test reports. If you override the default values make sure you
+        pass in a reference to an array. By default, this contains the MX's
+        known at the time of release for perl.org. If you do not have
+        Mail::Send installed (thus using the Net::SMTP interface) and do
+        have Net::DNS installed it will dynamically retrieve the latest
+        MX's. You really shouldn't need to use this unless the hardcoded
+        MX's have become wrong and you don't have Net::DNS installed
+
+    * mail_send_args
+        Optional. If you have MailTools installed and you want to have it
+        behave in a non-default manner, parameters that you give this method
+        will be passed directly to the constructor of Mail::Mailer. See the
+        Mail::Mailer manpage and the Mail::Send manpage for details.
+
+CAVEATS
+    If you specify recipients to be cc'd while using send() (and you do not
+    have Mail::Send installed) be sure that you use the author's @cpan.org
+    address otherwise they may not be delivered, since the perl.org MX's are
+    unlikely to relay for anything other than perl.org and cpan.org.
+
+    The internal bundling scheme may be changed in the future.
+
+BUGS
+    If you happen to find one please report it to the below URL.
+    Alternatively, you can mail me at afoxson@pobox.com :-)
+
+      http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-Reporter
 
 COPYRIGHT
-    Copyright (c) 2002 Adam J. Foxson. All rights reserved.
+    Copyright (c) 2003 Adam J. Foxson. All rights reserved.
 
 LICENSE
     This program is free software; you may redistribute it and/or modify it
     under the same terms as Perl itself.
 
 SEE ALSO
-    the perl manpage
+    * the perl manpage
+    * the Config manpage
+    * the Net::SMTP manpage
+    * the Net::Domain manpage
+        This is optional. If it's installed Test::Reporter will try even
+        harder at guessing your mail domain.
+
+    * the Net::DNS manpage
+        This is optional. If it's installed Test::Reporter will dynamically
+        retrieve the mail exchangers for perl.org, instead of relying on the
+        MX's known at the time of this release.
+
+    * the Mail::Send manpage
+        This is optional. If it's installed Test::Reporter will use
+        Mail::Send instead of Net::SMTP.
 
 AUTHOR
     Adam J. Foxson <afoxson@pobox.com>, with much deserved credit to Kirrily

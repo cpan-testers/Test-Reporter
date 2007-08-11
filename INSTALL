@@ -10,6 +10,10 @@ To install this distribution type the following:
    make test
    make install
 
-DEPENDENCIES
+DEPENDENCIES (see the POD/README for details on the optional modules)
 
-Net::SMTP, from libnet
+Net::SMTP (mandatory)
+File::Temp (mandatory)
+Net::Domain (optional)
+Net::DNS (optional)
+Mail::Send (optional)
