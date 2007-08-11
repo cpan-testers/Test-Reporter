@@ -449,6 +449,8 @@ sub _send_smtp {
 # Courtesy of Email::MessageID
 sub message_id {
     my $self = shift;
+    warn __PACKAGE__, ": message_id\n" if $self->debug();
+
     my $unique_value = 0;
     my @CHARS = ('A'..'F','a'..'f',0..9);
     my $length = 3;
@@ -731,7 +733,9 @@ sub _realname {
 }
 
 sub _is_a_perl_release {
-    shift; # don't need it..
+    my $self = shift;
+    warn __PACKAGE__, ": _is_a_perl_release\n" if $self->debug();
+
     my $perl = shift;
 
     return $perl =~ /^perl-?\d\.\d/;
@@ -742,6 +746,8 @@ sub _is_a_perl_release {
 # Visit the Perl Email Project at: http://emailproject.perl.org/
 sub _tz_diff {
     my $self = shift;
+    warn __PACKAGE__, ": _tz_diff\n" if $self->debug();
+
     my ($time) = @_;
 
     my $diff  =   Time::Local::timegm(localtime $time)
@@ -757,6 +763,8 @@ sub _tz_diff {
 
 sub _format_date {
     my $self = shift;
+    warn __PACKAGE__, ": _format_date\n" if $self->debug();
+
     my ($time) = @_;
     $time = time unless defined $time;
 
