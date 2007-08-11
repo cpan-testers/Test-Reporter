@@ -808,38 +808,99 @@ Test::Reporter - sends test results to cpan-testers@perl.org
 
 =head1 DESCRIPTION
 
-Test::Reporter reports the test results of any given distribution to the
-CPAN testing service. See B<http://testers.cpan.org/> for details.
+Test::Reporter reports the test results of any given distribution to the CPAN
+testing service. Test::Reporter has wide support for various perl5's and
+platforms. For further information visit the below links:
 
-Test::Reporter has wide support for various perl5's and platforms.
+=over 4
+
+=item * L<http://cpantesters.perl.org/>
+
+CPAN Testers reports (new site)
+
+=item * L<http://testers.cpan.org/>
+
+CPAN Testers reports (old site)
+
+=item * L<http://cpantest.grango.org/>
+
+The new CPAN Testers Wiki (thanks Barbie!)
+
+=back
+
+Test::Reporter itself--as a project--also has several links for your visiting
+enjoyment:
+
+=over 4
+
+=item * L<http://code.google.com/p/test-reporter/>
+
+Test::Reporter's master project page
+
+=item * L<http://groups.google.com/group/test-reporter>
+
+Discussion group for Test::Reporter
+
+=item * L<http://code.google.com/p/test-reporter/w/list>
+
+The Wiki for Test::Reporter
+
+=item * L<http://repo.or.cz/w/test-reporter.git>
+
+Test::Reporter's public git source code repository.
+
+=item * L<http://search.cpan.org/dist/Test-Reporter/>
+
+Test::Reporter on CPAN
+
+=item * L<http://code.google.com/p/test-reporter/issues/list>
+
+UNFORTUNATELY, WE ARE UNABLE TO ACCEPT TICKETS FILED WITH RT.
+
+Please file all bug reports and enhancement requests at our Google Code issue
+tracker. Thank you for your support and understanding.
+
+=item * L<http://backpan.cpan.org/authors/id/F/FO/FOX/>
+
+=item * L<http://backpan.cpan.org/authors/id/A/AF/AFOXSON/>
+
+If you happen to--for some strange reason--be looking for primordial versions
+of Test::Reporter, you can almost certainly find them at the above 2 links.
+
+=back
 
 =head1 METHODS
 
 =over 4
 
-=item * B<new>
+=item * B<address>
 
-This constructor returns a Test::Reporter object. It will optionally accept
-named parameters for: mx, address, grade, distribution, from, comments,
-via, timeout, debug and dir.
-
-=item * B<subject>
-
-Returns the subject line of a report, i.e.
-"PASS Mail-Freshmeat-1.20 Darwin 6.0". 'grade' and 'distribution' must
-first be specified before calling this method.
-
-=item * B<report>
-
-Returns the actual content of a report, i.e.
-"This distribution has been tested as part of the cpan-testers...". 
-'comments' must first be specified before calling this method, if you have
-comments to make and expect them to be included in the report.
+Optional. Gets or sets the e-mail address that the reports will be
+sent to. By default, this is set to cpan-testers@perl.org. You shouldn't
+need this unless the CPAN Tester's change the e-mail address to send
+report's to.
 
 =item * B<comments>
 
 Optional. Gets or sets the comments on the test report. This is most
 commonly used for distributions that did not pass a 'make test'.
+
+=item * B<debug>
+
+Optional. Gets or sets the value that will turn debugging on or off.
+Debug messages are sent to STDERR. 1 for on, 0 for off. Debugging
+generates very verbose output and is useful mainly for finding bugs
+in Test::Reporter itself.
+
+=item * B<dir>
+
+Optional. Defaults to the current working directory. This method specifies
+the directory that write() writes test report files to.
+
+=item * B<distribution>
+
+Gets or sets the name of the distribution you're working on, for example
+Foo-Bar-0.01. There are no restrictions on what can be put here.
 
 =item * B<edit_comments>
 
@@ -883,46 +944,19 @@ result. This must be one of:
   na        distribution will not work on this platform
   unknown   distribution did not include tests
 
-=item * B<distribution>
+=item * B<mail_send_args>
 
-Gets or sets the name of the distribution you're working on, for example
-Foo-Bar-0.01. There are no restrictions on what can be put here.
+Optional. If you have MailTools installed and you want to have it
+behave in a non-default manner, parameters that you give this
+method will be passed directly to the constructor of
+Mail::Mailer. See L<Mail::Mailer> and L<Mail::Send> for details. 
 
-=item * B<send>
+=item * B<message_id>
 
-Sends the test report to cpan-testers@perl.org and cc's the e-mail to the
-specified recipients, if any. If you do specify recipients to be cc'd and
-you do not have Mail::Send installed be sure that you use the author's
-@cpan.org address otherwise they will not be delivered. You must check
-errstr() on a send() in order to be guaranteed delivery. Technically, this
-is optional, as you may use Test::Reporter to only obtain the 'subject' and
-'report' without sending an e-mail at all, although that would be unusual.
-
-=item * B<timeout>
-
-Optional. Gets or sets the timeout value for the submission of test
-reports. Default is 120 seconds. 
-
-=item * B<via>
-
-Optional. Gets or sets the value that will be appended to
-X-Reported-Via, generally this is useful for distributions that use
-Test::Reporter to report test results. This would be something
-like "CPANPLUS 0.036".
-
-=item * B<debug>
-
-Optional. Gets or sets the value that will turn debugging on or off.
-Debug messages are sent to STDERR. 1 for on, 0 for off. Debugging
-generates very verbose output and is useful mainly for finding bugs
-in Test::Reporter itself.
-
-=item * B<address>
-
-Optional. Gets or sets the e-mail address that the reports will be
-sent to. By default, this is set to cpan-testers@perl.org. You shouldn't
-need this unless the CPAN Tester's change the e-mail address to send
-report's to.
+Returns an automatically generated Message ID. This Message ID will later
+be included as an outgoing mail header in the test report e-mail. This was
+included to conform to local mail policies at perl.org. This method courtesy
+of Email::MessageID.
 
 =item * B<mx>
 
@@ -935,17 +969,53 @@ Net::DNS installed it will dynamically retrieve the latest MX's. You
 really shouldn't need to use this unless the hardcoded MX's have
 become wrong and you don't have Net::DNS installed.
 
-=item * B<mail_send_args>
+=item * B<new>
 
-Optional. If you have MailTools installed and you want to have it
-behave in a non-default manner, parameters that you give this
-method will be passed directly to the constructor of
-Mail::Mailer. See L<Mail::Mailer> and L<Mail::Send> for details. 
+This constructor returns a Test::Reporter object. It will optionally accept
+named parameters for: mx, address, grade, distribution, from, comments,
+via, timeout, debug and dir.
 
-=item * B<dir>
+=item * B<perl_version>
 
-Optional. Defaults to the current working directory. This method specifies
-the directory that write() writes test report files to.
+Returns a hashref containing _archname, _osvers, and _myconfig based upon the
+perl that you are using. Alternatively, you may supply a different perl (path
+to the binary) as an argument, in which case the supplied perl will be used as
+the basis of the above data.
+
+=item * B<report>
+
+Returns the actual content of a report, i.e.
+"This distribution has been tested as part of the cpan-testers...". 
+'comments' must first be specified before calling this method, if you have
+comments to make and expect them to be included in the report.
+
+=item * B<send>
+
+Sends the test report to cpan-testers@perl.org and cc's the e-mail to the
+specified recipients, if any. If you do specify recipients to be cc'd and
+you do not have Mail::Send installed be sure that you use the author's
+@cpan.org address otherwise they will not be delivered. You must check
+errstr() on a send() in order to be guaranteed delivery. Technically, this
+is optional, as you may use Test::Reporter to only obtain the 'subject' and
+'report' without sending an e-mail at all, although that would be unusual.
+
+=item * B<subject>
+
+Returns the subject line of a report, i.e.
+"PASS Mail-Freshmeat-1.20 Darwin 6.0". 'grade' and 'distribution' must
+first be specified before calling this method.
+
+=item * B<timeout>
+
+Optional. Gets or sets the timeout value for the submission of test
+reports. Default is 120 seconds. 
+
+=item * B<via>
+
+Optional. Gets or sets the value that will be appended to
+X-Reported-Via, generally this is useful for distributions that use
+Test::Reporter to report test results. This would be something
+like "CPANPLUS 0.036".
 
 =item * B<write and read>
 
@@ -977,20 +1047,6 @@ write() also accepts an optional filehandle argument:
   my $fh; open $fh, '>-';  # create a STDOUT filehandle object
   $reporter->write($fh);   # prints the report to STDOUT
 
-=item * B<message_id>
-
-Returns an automatically generated Message ID. This Message ID will later
-be included as an outgoing mail header in the test report e-mail. This was
-included to conform to local mail policies at perl.org. This method courtesy
-of Email::MessageID.
-
-=item * B<perl_version>
-
-Returns a hashref containing _archname, _osvers, and _myconfig based upon the
-perl that you are using. Alternatively, you may supply a different perl (path
-to the binary) as an argument, in which case the supplied perl will be used as
-the basis of the above data.
-
 =back
 
 =head1 CAVEATS
@@ -999,30 +1055,6 @@ If you specify recipients to be cc'd while using send() (and you do not have
 Mail::Send installed) be sure that you use the author's @cpan.org address
 otherwise they may not be delivered, since the perl.org MX's are unlikely
 to relay for anything other than perl.org and cpan.org.
-
-=head1 BUGS
-
-Unfortunately, we are unable to accept tickets filed with RT. As such, please
-file bug reports and enhancement suggestions at our GoogleCode project site:
-
-  http://code.google.com/p/test-reporter/issues/list
-
-Patches are most welcome. And, where possible, we prefer patches in the
-unified diff format (diff -u). Thank you, kindly.
-
-=head1 EXTERNAL RESOURCES
-
-Project page:
-
-  http://code.google.com/p/test-reporter/
-
-Discussion group:
-
-  http://groups.google.com/group/test-reporter
-
-Subversion repository information page:
-
-  http://code.google.com/p/test-reporter/source
 
 =head1 COPYRIGHT
 
