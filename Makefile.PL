@@ -1,5 +1,5 @@
 # $Id: Makefile.PL 30 2006-09-05 05:43:50Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.28/Makefile.PL $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/Makefile.PL $
 
 use ExtUtils::MakeMaker;
 

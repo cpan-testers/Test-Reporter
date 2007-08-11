@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-# $Id: reporter.t 40 2007-04-06 07:39:12Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.28/t/reporter.t $
+# $Id: reporter.t 59 2007-06-26 20:50:33Z afoxson $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/t/reporter.t $
 
 use strict;
 use FileHandle;
@@ -164,7 +164,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
     close $fh;
 
     eval { $reporter->perl_version( "$^X $alt_perl"); };
-    ok( $@=~ q{^Test::Reporter: cannot get perl version info from /});
+    ok($@=~ q{^Test::Reporter: cannot get perl version info from});
     unlink $alt_perl;
 }
 

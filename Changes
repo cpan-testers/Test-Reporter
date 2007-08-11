@@ -1,7 +1,11 @@
-# $Id: Changes 53 2007-06-26 06:03:12Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.28/Changes $
+# $Id: Changes 60 2007-06-26 20:57:10Z afoxson $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/Changes $
 
 Revision history for Perl extension Test::Reporter.
+
+1.29_02  Tue Jun 26 16:00:00 CDT 2007
+    - Fixed a portability bug in t/reporter.t. Reported by David Golden.
+      See 6@Google for more information
 
 1.29_01  Tue Jun 26 01:30:00 CDT 2007
     - Switched from RT to Google Code for defect and enhancement tracking.

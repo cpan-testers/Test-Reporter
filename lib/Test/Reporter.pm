@@ -1,5 +1,5 @@
-# $Id: Reporter.pm 50 2007-06-26 00:24:19Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.28/lib/Test/Reporter.pm $
+# $Id: Reporter.pm 60 2007-06-26 20:57:10Z afoxson $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/lib/Test/Reporter.pm $
 
 # Test::Reporter - sends test results to cpan-testers@perl.org
 # Copyright (c) 2003 Adam J. Foxson. All rights reserved.
@@ -27,7 +27,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.29_01';
+$VERSION = '1.29_02';
 
 local $^W = 1;
 
