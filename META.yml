@@ -1,12 +1,16 @@
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         Test-Reporter
-version:      1.27
-version_from: lib/Test/Reporter.pm
-installdirs:  site
-requires:
+--- #YAML:1.0
+name:                Test-Reporter
+version:             1.29_01
+abstract:            sends test results to cpan-testers@perl.org
+license:             ~
+generated_by:        ExtUtils::MakeMaker version 6.32
+distribution_type:   module
+requires:     
+    File::Spec:                    0
     File::Temp:                    0
     Net::SMTP:                     0
-    File::Spec:                    0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.12
+meta-spec:
+    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
+    version: 1.2
+author:
+    - Adam J. Foxson <afoxson@pobox.com>

@@ -1,1 +1,0 @@
-* support Net::SMTP_auth (hashrefs in ->mx()?)

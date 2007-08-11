@@ -1,15 +1,11 @@
+bin/cpantest
 Changes
 INSTALL
-MANIFEST			This list of files
-MANIFEST.SKIP
+lib/Test/Reporter.pm
 Makefile.PL
-META.yml
+MANIFEST
+MANIFEST.SKIP
 README
 SIGNATURE
-TODO
-bin/cpantest
-lib/Test/Reporter.pm
-lib/Test/Reporter/Date/Format.pm
-lib/Test/Reporter/Mail/Util.pm
-lib/Test/Reporter/Time/Zone.pm
 t/reporter.t
+META.yml                                 Module meta-data (added by MakeMaker)

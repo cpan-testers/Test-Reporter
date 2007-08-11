@@ -1,4 +1,32 @@
+# $Id: Changes 53 2007-06-26 06:03:12Z afoxson $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.28/Changes $
+
 Revision history for Perl extension Test::Reporter.
+
+1.29_01  Tue Jun 26 01:30:00 CDT 2007
+    - Switched from RT to Google Code for defect and enhancement tracking.
+      Please visit: http://code.google.com/p/test-reporter/
+    - warnings enabled for Reporter.pm
+    - TODO file removed; moved to POD
+    - MacPerl (i.e., pre OS X) support dropped for Test::Reporter
+    - MacPerl (i.e., pre OS X) support dropped for cpantest
+    - Incorporated suggestion from MIROD; add documentation to describe what a
+      package should look like (14376)
+    - Incorporated patch from SAPER; compatibility for write() under
+      5.004 (14148)
+    - Incorporated suggestion from CLACO; updated MX for perl.org (11370)
+    - Incorporated suggestion from an anonymous individual: when an MX
+      connection failure occurs, show the failing MX server, if debugging
+      is on (14626)
+    - Changes indentation style of code from tabs to spaces
+    - Added Id and HeadURL subversion tokens
+    - Removed dependencies on Date::Format and Time::Zone
+    - Unbundled Mail::Util; Now integrated into Reporter.pm
+    - Incorporated patch from MIROD; support for reporting tests on
+      non-standard versions of perl (14375)
+    - Added more tests to the T::R test suite (more than doubled quantity)
+    - We now refuse to report results against perl itself; use perlbug
+    - Added Message-IDs to emails sent via SMTP per tom at eborcom dot com
 
 1.27  Mon Jan 17 15:51:00 2005
     - don't try to use Mail::Send on Windows

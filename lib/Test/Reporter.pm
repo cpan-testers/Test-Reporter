@@ -1,5 +1,5 @@
-# $Revision: 1.20 $
-# $Id: Reporter.pm,v 1.20 2003/03/05 09:15:53 afoxson Exp $
+# $Id: Reporter.pm 50 2007-06-26 00:24:19Z afoxson $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.28/lib/Test/Reporter.pm $
 
 # Test::Reporter - sends test results to cpan-testers@perl.org
 # Copyright (c) 2003 Adam J. Foxson. All rights reserved.
@@ -18,176 +18,174 @@ use Cwd;
 use Config;
 use Carp;
 use Net::SMTP;
+use FileHandle;
 use File::Temp;
-use Test::Reporter::Mail::Util;
-use Test::Reporter::Date::Format;
-use vars qw($VERSION $AUTOLOAD $Tempfile $Report $MacMPW $MacApp $DNS $Domain $Send);
+use POSIX ();
+use Sys::Hostname;
+use vars qw($VERSION $AUTOLOAD $Tempfile $Report $DNS $Domain $Send);
+use constant FAKE_NO_NET_DNS => 0;    # for debugging only
+use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
+use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$MacMPW    = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
-$MacApp    = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
-$VERSION = '1.27';
+$VERSION = '1.29_01';
 
-local $^W;
-
-sub FAKE_NO_NET_DNS() {0}    # for debugging only
-sub FAKE_NO_NET_DOMAIN() {0} # for debugging only
-sub FAKE_NO_MAIL_SEND() {0}  # for debugging only
+local $^W = 1;
 
 sub new {
-	my $type  = shift;
-	my $class = ref($type) || $type;
-	my $self  = {
-		'_mx'                => ['mx1.x.perl.org', 'mx2.x.perl.org'],
-		'_address'           => 'cpan-testers@perl.org',
-		'_grade'             => undef,
-		'_distribution'      => undef,
-		'_report'            => undef,
-		'_subject'           => undef,
-		'_from'              => undef,
-		'_comments'          => '',
-		'_errstr'            => '',
-		'_via'               => '',
-		'_mail_send_args'    => '',
-		'_timeout'           => 120,
-		'_debug'             => 0,
-		'_dir'               => '',
-		'_subject_lock'      => 0,
-		'_report_lock'       => 0,
-	};
+    my $type  = shift;
+    my $class = ref($type) || $type;
+    my $self  = {
+        '_mx'                => ['mx.develooper.com'],
+        '_address'           => 'cpan-testers@perl.org',
+        '_grade'             => undef,
+        '_distribution'      => undef,
+        '_report'            => undef,
+        '_subject'           => undef,
+        '_from'              => undef,
+        '_comments'          => '',
+        '_errstr'            => '',
+        '_via'               => '',
+        '_mail_send_args'    => '',
+        '_timeout'           => 120,
+        '_debug'             => 0,
+        '_dir'               => '',
+        '_subject_lock'      => 0,
+        '_report_lock'       => 0,
+        '_perl_version'      => {
+            '_archname' => $Config{archname},
+            '_osvers'   => $Config{osvers},
+            '_myconfig' => Config::myconfig(),
+        },
+    };
 
-	bless $self, $class;
+    bless $self, $class;
 
-	$self->{_attr} = {   
-		map {$_ => 1} qw(   
-			_address _distribution _comments _errstr _via _timeout _debug _dir
-		)
-	};
+    $self->{_attr} = {   
+        map {$_ => 1} qw(   
+            _address _distribution _comments _errstr _via _timeout _debug _dir
+        )
+    };
 
-	warn __PACKAGE__, ": new\n" if $self->debug();
-	croak __PACKAGE__, ": new: even number of named arguments required"
-		unless scalar @_ % 2 == 0;
+    warn __PACKAGE__, ": new\n" if $self->debug();
+    croak __PACKAGE__, ": new: even number of named arguments required"
+        unless scalar @_ % 2 == 0;
 
-	$self->_process_params(@_) if @_;
-	$self->_get_mx(@_) if $self->_have_net_dns();
+    $self->_process_params(@_) if @_;
+    $self->_get_mx(@_) if $self->_have_net_dns();
 
-	return $self;
+    return $self;
 }
 
 sub _get_mx {
-	my $self = shift;
-	warn __PACKAGE__, ": _get_mx\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _get_mx\n" if $self->debug();
 
-	my %params = @_;
+    my %params = @_;
 
-	return if exists $params{'mx'};
+    return if exists $params{'mx'};
 
-	my $dom = $params{'address'} || $self->address();
-	my @mx;
+    my $dom = $params{'address'} || $self->address();
+    my @mx;
 
-	$dom =~ s/^.+\@//;
+    $dom =~ s/^.+\@//;
 
-	for my $mx (sort {$a->preference() <=> $b->preference()} Net::DNS::mx($dom)) {
-		push @mx, $mx->exchange();
-	}
+    for my $mx (sort {$a->preference() <=> $b->preference()} Net::DNS::mx($dom)) {
+        push @mx, $mx->exchange();
+    }
 
-	if (not @mx) {
-		warn __PACKAGE__,
-			": _get_mx: unable to find MX's for $dom, using defaults\n" if
-				$self->debug();
-		return;
-	}
+    if (not @mx) {
+        warn __PACKAGE__,
+            ": _get_mx: unable to find MX's for $dom, using defaults\n" if
+                $self->debug();
+        return;
+    }
 
-	$self->mx(\@mx);
+    $self->mx(\@mx);
 }
 
 sub _process_params {
-	my $self = shift;
-	warn __PACKAGE__, ": _process_params\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _process_params\n" if $self->debug();
 
-	my %params   = @_;
-	my @defaults = qw(
-		mx address grade distribution from comments via timeout debug dir);
-	my %defaults = map {$_ => 1} @defaults;
+    my %params   = @_;
+    my @defaults = qw(
+        mx address grade distribution from comments via timeout debug dir perl_version);
+    my %defaults = map {$_ => 1} @defaults;
 
-	for my $param (keys %params) {   
-		croak __PACKAGE__, ": new: parameter '$param' is invalid." unless
-			exists $defaults{$param};
-	}
+    for my $param (keys %params) {   
+        croak __PACKAGE__, ": new: parameter '$param' is invalid." unless
+            exists $defaults{$param};
+    }
 
-	for my $param (keys %params) {   
-		$self->$param($params{$param});
-	}
+    for my $param (keys %params) {   
+        $self->$param($params{$param});
+    }
 }
 
 sub subject {
-	my $self = shift;
-	warn __PACKAGE__, ": subject\n" if $self->debug();
-	croak __PACKAGE__, ": subject: grade and distribution must first be set"
-		if not defined $self->{_grade} or not defined $self->{_distribution};
+    my $self = shift;
+    warn __PACKAGE__, ": subject\n" if $self->debug();
+    croak __PACKAGE__, ": subject: grade and distribution must first be set"
+        if not defined $self->{_grade} or not defined $self->{_distribution};
 
-	return $self->{_subject} if $self->{_subject_lock};
+    return $self->{_subject} if $self->{_subject_lock};
 
-	my $subject = uc($self->{_grade}) . ' ' . $self->{_distribution} .
-		" $Config{archname} $Config{osvers}";
+    my $subject = uc($self->{_grade}) . ' ' . $self->{_distribution} .
+        " $self->{_perl_version}->{_archname} $self->{_perl_version}->{_osvers}";
 
-	return $self->{_subject} = $subject;
+    return $self->{_subject} = $subject;
 }
 
 sub report {
-	my $self = shift;
-	warn __PACKAGE__, ": report\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": report\n" if $self->debug();
 
-	return $self->{_report} if $self->{_report_lock};
+    return $self->{_report} if $self->{_report_lock};
 
-	my $report = qq(
-		This distribution has been tested as part of the cpan-testers
-		effort to test as many new uploads to CPAN as possible.  See
-		http://testers.cpan.org/
+    my $report;
+    $report .= "This distribution has been tested as part of the cpan-testers\n";
+    $report .= "effort to test as many new uploads to CPAN as possible.  See\n";
+    $report .= "http://testers.cpan.org/\n\n";
+    $report .= "Please cc any replies to cpan-testers\@perl.org to keep other\n";
+    $report .= "test volunteers informed and to prevent any duplicate effort.\n";
 
-		Please cc any replies to cpan-testers\@perl.org to keep other
-		test volunteers informed and to prevent any duplicate effort.
-	);
+    if (not $self->{_comments}) {
+        $report .= "\n\n--\n\n";
+    }
+    else {
+        $report .= "\n--\n" . $self->{_comments} . "\n--\n\n";
+    }
 
-	$report =~ s/\n//;
-	$report =~ s/\t{2}//g;
+    $report .= $self->{_perl_version}->{_myconfig}; # XXX . "\n";
 
-	if (not $self->{_comments}) {
-		$report .= "\n\n--\n\n";
-	}
-	else {
-		$report .= "\n--\n" . $self->{_comments} . "\n--\n\n";
-	}
+    chomp $report;
+    chomp $report;
 
-	$report .= Config::myconfig();
-
-	chomp $report;
-	chomp $report;
-
-	return $self->{_report} = $report;
+    return $self->{_report} = $report;
 }
 
 sub grade {
-	my ($self, $grade) = @_;
-	warn __PACKAGE__, ": grade\n" if $self->debug();
+    my ($self, $grade) = @_;
+    warn __PACKAGE__, ": grade\n" if $self->debug();
 
-	my %grades    = (
-		'pass'    => "all tests passed",
-		'fail'    => "one or more tests failed",
-		'na'      => "distribution will not work on this platform",
-		'unknown' => "distribution did not include tests",
-	);
+    my %grades    = (
+        'pass'    => "all tests passed",
+        'fail'    => "one or more tests failed",
+        'na'      => "distribution will not work on this platform",
+        'unknown' => "distribution did not include tests",
+    );
 
-	return $self->{_grade} if scalar @_ == 1;
+    return $self->{_grade} if scalar @_ == 1;
 
-	croak __PACKAGE__, ":grade: '$grade' is invalid, choose from: " .
-		join ' ', keys %grades unless $grades{$grade};
+    croak __PACKAGE__, ":grade: '$grade' is invalid, choose from: " .
+        join ' ', keys %grades unless $grades{$grade};
 
-	return $self->{_grade} = $grade;
+    return $self->{_grade} = $grade;
 }
 
 sub edit_comments {
     my($self, %args) = @_;
-	warn __PACKAGE__, ": edit_comments\n" if $self->debug();
+    warn __PACKAGE__, ": edit_comments\n" if $self->debug();
 
     my %tempfile_args = (
         UNLINK => 1,
@@ -200,406 +198,542 @@ sub edit_comments {
         $tempfile_args{SUFFIX} =~ s/^(?!\.)(?=.)/./;
     }
 
-	($Tempfile, $Report) = File::Temp::tempfile(%tempfile_args);
+    ($Tempfile, $Report) = File::Temp::tempfile(%tempfile_args);
 
-	print $Tempfile $self->{_comments};
+    print $Tempfile $self->{_comments};
 
-	$self->_start_editor();
+    $self->_start_editor();
 
-	my $comments;
-	{
-		local $/;
-		open FH, $Report or die __PACKAGE__, ": Can't open comment file '$Report': $!";
-		$comments = <FH>;
-		close FH or die __PACKAGE__, ": Can't close comment file '$Report': $!";
-	}
+    my $comments;
+    {
+        local $/;
+        open FH, $Report or die __PACKAGE__, ": Can't open comment file '$Report': $!";
+        $comments = <FH>;
+        close FH or die __PACKAGE__, ": Can't close comment file '$Report': $!";
+    }
 
-	chomp $comments;
+    chomp $comments;
 
-	$self->{_comments} = $comments;
+    $self->{_comments} = $comments;
 
-	return;
+    return;
 }
 
 sub send {
-	my ($self, @recipients) = @_;
-	warn __PACKAGE__, ": send\n" if $self->debug();
+    my ($self, @recipients) = @_;
+    warn __PACKAGE__, ": send\n" if $self->debug();
 
-	$self->from();
-	$self->report();
-	$self->subject();
+    $self->from();
+    $self->report();
+    $self->subject();
 
-	return unless $self->_verify();
+    return unless $self->_verify();
 
-	if ($^O !~ /^(?:cygwin|MSWin32)$/ && $self->_have_mail_send()) {
-		return $self->_mail_send(@recipients);
-	}
-	else {
-		return $self->_send_smtp(@recipients);
-	}
+    if ($self->_is_a_perl_release($self->distribution())) {
+        $self->errstr(__PACKAGE__ . ": use perlbug for reporting test " .
+            "results against perl itself");
+        return;
+    }
+
+    # Addresses #9831: Usage of Mail::Mailer is broken on Win32
+    if ($^O !~ /^(?:cygwin|MSWin32)$/ && $self->_have_mail_send()) {
+        return $self->_mail_send(@recipients);
+    }
+    else {
+        return $self->_send_smtp(@recipients);
+    }
 }
 
 sub write {
-	my $self = shift;
-	warn __PACKAGE__, ": write\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": write\n" if $self->debug();
 
-	my $from = $self->from();
-	my $report = $self->report();
-	my $subject = $self->subject();
-	my $distribution = $self->distribution();
-	my $grade = $self->grade();
-	my $dir = $self->dir() || cwd;
+    my $from = $self->from();
+    my $report = $self->report();
+    my $subject = $self->subject();
+    my $distribution = $self->distribution();
+    my $grade = $self->grade();
+    my $dir = $self->dir() || cwd;
 
-	return unless $self->_verify();
+    return unless $self->_verify();
 
-	$distribution =~ s/[^A-Za-z0-9\.\-]+//g;
+    $distribution =~ s/[^A-Za-z0-9\.\-]+//g;
 
-	my($fh, $file); unless ($fh = $_[0]) {
-		$file = "$dir/$grade.$distribution.$Config{archname}.$Config{osvers}.${\(time)}.$$.rpt";
-		warn $file if $self->debug();
-		open $fh, ">$file" or die __PACKAGE__, ": Can't open report file '$file': $!";
-	}
-	print $fh "From: $from\n";
-	print $fh "Subject: $subject\n";
-	print $fh "Report: $report";
-	unless ($_[0]) {
-		close $fh or die __PACKAGE__, ": Can't close report file '$file': $!";
-		warn $file if $self->debug();
-		return $file;
-	} else {
-		return $fh;
-	}
+    my($fh, $file); unless ($fh = $_[0]) {
+        $file = "$dir/$grade.$distribution.$self->{_perl_version}->{_archname}.$self->{_perl_version}->{_osvers}.${\(time)}.$$.rpt";
+        warn $file if $self->debug();
+        $fh = FileHandle->new();
+        open $fh, ">$file" or die __PACKAGE__, ": Can't open report file '$file': $!";
+    }
+    print $fh "From: $from\n";
+    print $fh "Subject: $subject\n";
+    print $fh "Report: $report";
+    unless ($_[0]) {
+        close $fh or die __PACKAGE__, ": Can't close report file '$file': $!";
+        warn $file if $self->debug();
+        return $file;
+    } else {
+        return $fh;
+    }
 }
 
 sub read {
-	my ($self, $file) = @_;
-	warn __PACKAGE__, ": read\n" if $self->debug();
+    my ($self, $file) = @_;
+    warn __PACKAGE__, ": read\n" if $self->debug();
 
-	my $buffer;
+    my $buffer;
 
-	{
-		local $/;
-		open REPORT, $file or die __PACKAGE__, ": Can't open report file '$file': $!";
-		$buffer = <REPORT>;
-		close REPORT or die __PACKAGE__, ": Can't close report file '$file': $!";
-	}
+    {
+        local $/;
+        open REPORT, $file or die __PACKAGE__, ": Can't open report file '$file': $!";
+        $buffer = <REPORT>;
+        close REPORT or die __PACKAGE__, ": Can't close report file '$file': $!";
+    }
 
-	if (my ($from, $subject, $report) = $buffer =~ /^From:\s(.+)Subject:\s(.+)Report:\s(.+)$/s) {
-		my ($grade, $distribution) = (split /\s/, $subject)[0,1];
-		$self->from($from) unless $self->from();
-		$self->{_subject} = $subject;
-		$self->{_report} = $report;
-		$self->{_grade} = lc $grade;
-		$self->{_distribution} = $distribution;
-		$self->{_subject_lock} = 1;
-		$self->{_report_lock} = 1;
-	} else {
-		die __PACKAGE__, ": Failed to parse report file '$file'\n";
-	}
+    if (my ($from, $subject, $report) = $buffer =~ /^From:\s(.+)Subject:\s(.+)Report:\s(.+)$/s) {
+        my ($grade, $distribution) = (split /\s/, $subject)[0,1];
+        $self->from($from) unless $self->from();
+        $self->{_subject} = $subject;
+        $self->{_report} = $report;
+        $self->{_grade} = lc $grade;
+        $self->{_distribution} = $distribution;
+        $self->{_subject_lock} = 1;
+        $self->{_report_lock} = 1;
+    } else {
+        die __PACKAGE__, ": Failed to parse report file '$file'\n";
+    }
 
-	return $self;
+    return $self;
 }
 
 sub _verify {
-	my $self = shift;
-	warn __PACKAGE__, ": _verify\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _verify\n" if $self->debug();
 
-	my @undefined;
+    my @undefined;
 
-	for my $key (keys %{$self}) {
-		push @undefined, $key unless defined $self->{$key};
-	}
+    for my $key (keys %{$self}) {
+        push @undefined, $key unless defined $self->{$key};
+    }
 
-	$self->errstr(__PACKAGE__ . ": Missing values for: " .
-		join ', ', map {$_ =~ /^_(.+)$/} @undefined) if
-		scalar @undefined > 0;
-	return $self->errstr() ? return 0 : return 1;
+    $self->errstr(__PACKAGE__ . ": Missing values for: " .
+        join ', ', map {$_ =~ /^_(.+)$/} @undefined) if
+        scalar @undefined > 0;
+    return $self->errstr() ? return 0 : return 1;
 }
 
 sub _mail_send {
-	my $self = shift;
-	warn __PACKAGE__, ": _mail_send\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _mail_send\n" if $self->debug();
 
-	my $fh;
-	my $recipients;
-	my @recipients = @_;
-	my $via        = $self->via();
-	my $msg        = Mail::Send->new();
+    my $fh;
+    my $recipients;
+    my @recipients = @_;
+    my $via        = $self->via();
+    my $msg        = Mail::Send->new();
 
-	if (@recipients) {
-		$recipients = join ', ', @recipients;
-		chomp $recipients;
-		chomp $recipients;
-	}
+    if (@recipients) {
+        $recipients = join ', ', @recipients;
+        chomp $recipients;
+        chomp $recipients;
+    }
 
-	$via = ', via ' . $via if $via;
+    $via = ', via ' . $via if $via;
 
-	$msg->to($self->address());
-	$msg->set('From', $self->from());
-	$msg->subject($self->subject());
-	$msg->add('X-Reported-Via', "Test::Reporter ${VERSION}$via");
-	$msg->add('Cc', $recipients) if @_;
+    $msg->to($self->address());
+    $msg->set('From', $self->from());
+    $msg->subject($self->subject());
+    $msg->add('X-Reported-Via', "Test::Reporter ${VERSION}$via");
+    $msg->add('Cc', $recipients) if @_;
 
-	if ($self->mail_send_args() and ref $self->mail_send_args() eq 'ARRAY') {
-		$fh = $msg->open(@{$self->mail_send_args()});
-	}
-	else {
-		$fh = $msg->open();
-	}
+    if ($self->mail_send_args() and ref $self->mail_send_args() eq 'ARRAY') {
+        $fh = $msg->open(@{$self->mail_send_args()});
+    }
+    else {
+        $fh = $msg->open();
+    }
 
-	print $fh $self->report();
-	
-	$fh->close();
+    print $fh $self->report();
+    
+    $fh->close();
 }
 
 sub _send_smtp {
-	my $self = shift;
-	warn __PACKAGE__, ": _send_smtp\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _send_smtp\n" if $self->debug();
 
-	my $helo          = $self->_maildomain();
-	my $from          = $self->from();
-	my $via           = $self->via();
-	my $debug         = $self->debug();
-	my @recipients    = @_;
-	my @tmprecipients = ();
-	my @bad           = ();
-	my $success       = 0;
-	my $fail          = 0;
-	my $recipients;
-	my $smtp;
+    my $helo          = $self->_maildomain();
+    my $from          = $self->from();
+    my $via           = $self->via();
+    my $debug         = $self->debug();
+    my @recipients    = @_;
+    my @tmprecipients = ();
+    my @bad           = ();
+    my $success       = 0;
+    my $fail          = 0;
+    my $recipients;
+    my $smtp;
 
-	my $mx;
-	for my $server (@{$self->{_mx}}) {
-		$smtp = Net::SMTP->new($server, Hello => $helo,
-			Timeout => $self->{_timeout}, Debug => $debug);
+    my $mx;
+    for my $server (@{$self->{_mx}}) {
+        $smtp = Net::SMTP->new($server, Hello => $helo,
+            Timeout => $self->{_timeout}, Debug => $debug);
 
-		if (defined $smtp) {
-		    $mx = $server;
-		    last;
-		}
+        if (defined $smtp) {
+            $mx = $server;
+            last;
+        }
+        else {
+            warn __PACKAGE__, ": Unable to connect to MX '$server'\n" if $self->debug();
+            $fail++;
+        }
+    }
 
-		$fail++;
-	}
+    unless ($mx && $smtp) {
+        $self->errstr(__PACKAGE__ . ': Unable to connect to any MX\'s');
+        return 0;
+    }
 
-	unless ($mx && $smtp) {
-		$self->errstr(__PACKAGE__ . ': Unable to connect to any MX\'s');
-		return 0;
-	}
+    if (@recipients) {
+        if ($mx =~ /(?:^|\.)(?:perl|cpan)\.org$/) {
+            for my $recipient (sort @recipients) {
+                if ($recipient =~ /(?:@|\.)(?:perl|cpan)\.org$/) {
+                    push @tmprecipients, $recipient;
+                } else {
+                    push @bad, $recipient;
+                }
+            }
 
-	if (@recipients) {
-		if ($mx =~ /(?:^|\.)(?:perl|cpan)\.org$/) {
-			for my $recipient (sort @recipients) {
-			    if ($recipient =~ /(?:@|\.)(?:perl|cpan)\.org$/) {
-				    push @tmprecipients, $recipient;
-			    } else {
-				    push @bad, $recipient;
-			    }
-			}
+            if (@bad) {
+                warn __PACKAGE__, ": Will not attempt to cc the following recipients since perl.org MX's will not relay for them. Either install Mail::Send, use other MX's, or only cc address ending in cpan.org or perl.org: ${\(join ', ', @bad)}.\n";
+            }
 
-			if (@bad) {
-				warn __PACKAGE__, ": Will not attempt to cc the following recipients since perl.org MX's will not relay for them. Either install Mail::Send, use other MX's, or only cc address ending in cpan.org or perl.org: ${\(join ', ', @bad)}.\n";
-			}
+            @recipients = @tmprecipients;
+        }
 
-			@recipients = @tmprecipients;
-		}
+        $recipients = join ', ', @recipients;
+        chomp $recipients;
+        chomp $recipients;
+    }
 
-		$recipients = join ', ', @recipients;
-		chomp $recipients;
-		chomp $recipients;
-	}
+    $via = ', via ' . $via if $via;
 
-	$via = ', via ' . $via if $via;
+    my $envelope_sender = $from;
+    $envelope_sender =~ s/\s\([^)]+\)$//; # email only; no name
 
-	$success += $smtp->mail($from);
-	$success += $smtp->to($self->{_address});
-	$success += $smtp->cc(@recipients) if @recipients;
-	$success += $smtp->data();
-	$success += $smtp->datasend("Date: ", time2str("%a, %e %b %Y %T %z", time), "\n");
-	$success += $smtp->datasend("Subject: ", $self->subject(), "\n");
-	$success += $smtp->datasend("From: $from\n");
-	$success += $smtp->datasend("To: ", $self->{_address}, "\n");
-	$success += $smtp->datasend("Cc: $recipients\n") if @recipients && $success == 8;
-	$success +=
-		$smtp->datasend("X-Reported-Via: Test::Reporter ${VERSION}$via\n");
-	$success += $smtp->datasend("\n");
-	$success += $smtp->datasend($self->report());
-	$success += $smtp->dataend();
-	$success += $smtp->quit;
+    $success += $smtp->mail($envelope_sender);
+    $success += $smtp->to($self->{_address});
+    $success += $smtp->cc(@recipients) if @recipients;
+    $success += $smtp->data();
+    $success += $smtp->datasend("Date: ", POSIX::strftime("%a, %e %b %Y %T %z", localtime(time)), "\n");
+    $success += $smtp->datasend("Subject: ", $self->subject(), "\n");
+    $success += $smtp->datasend("From: $from\n");
+    $success += $smtp->datasend("To: ", $self->{_address}, "\n");
+    $success += $smtp->datasend("Cc: $recipients\n") if @recipients && $success == 8;
+    $success += $smtp->datasend("Message-ID: ", $self->message_id(), "\n");
+    $success +=
+        $smtp->datasend("X-Reported-Via: Test::Reporter ${VERSION}$via\n");
+    $success += $smtp->datasend("\n");
+    $success += $smtp->datasend($self->report());
+    $success += $smtp->dataend();
+    $success += $smtp->quit;
 
-	if (@recipients) {
-		$self->errstr(__PACKAGE__ .
-			": Unable to send test report to one or more recipients\n") if $success != 14;
-	}
-	else {
-		$self->errstr(__PACKAGE__ . ": Unable to send test report\n") if $success != 12;
-	}
+    if (@recipients) {
+        $self->errstr(__PACKAGE__ .
+            ": Unable to send test report to one or more recipients\n") if $success != 15;
+    }
+    else {
+        $self->errstr(__PACKAGE__ . ": Unable to send test report\n") if $success != 13;
+    }
 
-	return $self->errstr() ? 0 : 1;
+    return $self->errstr() ? 0 : 1;
+}
+
+# Courtesy of Email::MessageID
+sub message_id {
+    my $self = shift;
+    my $unique_value = 0;
+    my @CHARS = ('A'..'F','a'..'f',0..9);
+    my $length = 3;
+
+    $length = rand(8) until $length > 3;
+
+    my $pseudo_random = join '', (map $CHARS[rand $#CHARS], 0 .. $length), $unique_value++;
+    my $user = join '.', time, $pseudo_random, $$;
+
+    return '<' . $user . '@' . Sys::Hostname::hostname() . '>';
 }
 
 sub from {
-	my $self = shift;
-	warn __PACKAGE__, ": from\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": from\n" if $self->debug();
 
-	if (@_) {
-		$self->{_from} = shift;
-	}
-	else {
-		$self->{_from} = $self->_mailaddress();
-	}
+    if (@_) {
+        $self->{_from} = shift;
+        return $self->{_from};
+    }
+    else {
+        return $self->{_from} if defined $self->{_from} and $self->{_from};
+        $self->{_from} = $self->_mailaddress();
+        return $self->{_from};
+    }
 
-	return $self->{_from};
 }
 
 sub mx {
-	my $self = shift;
-	warn __PACKAGE__, ": mx\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": mx\n" if $self->debug();
 
-	if (@_) {
-		my $mx = shift;
-		croak __PACKAGE__,
-			": mx: array reference required" if ref $mx ne 'ARRAY';
-		$self->{_mx} = $mx;
-	}
+    if (@_) {
+        my $mx = shift;
+        croak __PACKAGE__,
+            ": mx: array reference required" if ref $mx ne 'ARRAY';
+        $self->{_mx} = $mx;
+    }
 
-	return $self->{_mx};
+    return $self->{_mx};
 }
 
 sub mail_send_args {
-	my $self = shift;
-	warn __PACKAGE__, ": mail_send_args\n" if $self->debug();
-	croak __PACKAGE__, ": mail_send_args cannot be called unless Mail::Send is installed\n" unless $self->_have_mail_send();
+    my $self = shift;
+    warn __PACKAGE__, ": mail_send_args\n" if $self->debug();
+    croak __PACKAGE__, ": mail_send_args cannot be called unless Mail::Send is installed\n" unless $self->_have_mail_send();
 
-	if (@_) {
-		my $mail_send_args = shift;
-		croak __PACKAGE__, ": mail_send_args: array reference required" if
-			ref $mail_send_args ne 'ARRAY';
-		$self->{_mail_send_args} = $mail_send_args;
-	}
+    if (@_) {
+        my $mail_send_args = shift;
+        croak __PACKAGE__, ": mail_send_args: array reference required" if
+            ref $mail_send_args ne 'ARRAY';
+        $self->{_mail_send_args} = $mail_send_args;
+    }
 
-	return $self->{_mail_send_args};
+    return $self->{_mail_send_args};
+}
+
+sub perl_version  {
+    my $self = shift;
+    warn __PACKAGE__, ": perl_version\n" if $self->debug();
+
+    if( @_) {
+        my $perl = shift;
+        my $q = ( ($^O eq "MSWin32") || ($^O eq 'VMS') ) ? '"' : "'"; # quote for command-line perl
+        my $magick = int(rand(1000));                                 # just to check that we get a valid result back
+        my $conf = `$perl -MConfig -e$q print qq{$magick\n\$Config{archname}\n\$Config{osvers}\n},Config::myconfig();$q`;
+        my %conf;
+        ( @conf{ qw( magick _archname _osvers _myconfig) } ) = split( /\n/, $conf, 4);
+        croak __PACKAGE__, ": cannot get perl version info from $perl: $conf" if( $conf{magick} ne $magick);
+        delete $conf{magick};
+        $self->{_perl_version} = \%conf;
+   }
+   return $self->{_perl_version};
 }
 
 sub AUTOLOAD {
-	my $self               = $_[0];
-	my ($package, $method) = ($AUTOLOAD =~ /(.*)::(.*)/);
+    my $self               = $_[0];
+    my ($package, $method) = ($AUTOLOAD =~ /(.*)::(.*)/);
 
-	return if $method =~ /^DESTROY$/;
+    return if $method =~ /^DESTROY$/;
 
-	unless ($self->{_attr}->{"_$method"}) {
-		croak __PACKAGE__, ": No such method: $method; aborting";
-	}
+    unless ($self->{_attr}->{"_$method"}) {
+        croak __PACKAGE__, ": No such method: $method; aborting";
+    }
 
-	my $code = q{
-		sub {   
-			my $self = shift;
-			warn __PACKAGE__, ": METHOD\n" if $self->{_debug};
-			$self->{_METHOD} = shift if @_;
-			return $self->{_METHOD};
-		}
-	};
+    my $code = q{
+        sub {   
+            my $self = shift;
+            warn __PACKAGE__, ": METHOD\n" if $self->{_debug};
+            $self->{_METHOD} = shift if @_;
+            return $self->{_METHOD};
+        }
+    };
 
-	$code =~ s/METHOD/$method/g;
+    $code =~ s/METHOD/$method/g;
 
-	{
-		no strict 'refs';
-		*$AUTOLOAD = eval $code;
-	}
+    {
+        no strict 'refs';
+        *$AUTOLOAD = eval $code;
+    }
 
-	goto &$AUTOLOAD;
+    goto &$AUTOLOAD;
 }
 
 sub _have_net_dns {
-	my $self = shift;
-	warn __PACKAGE__, ": _have_net_dns\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _have_net_dns\n" if $self->debug();
 
-	return $DNS if defined $DNS;
-	return 0 if FAKE_NO_NET_DNS;
+    return $DNS if defined $DNS;
+    return 0 if FAKE_NO_NET_DNS;
 
-	$DNS = eval {require Net::DNS};
+    $DNS = eval {require Net::DNS};
 }
 
 sub _have_net_domain {
-	my $self = shift;
-	warn __PACKAGE__, ": _have_net_domain\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _have_net_domain\n" if $self->debug();
 
-	return $Domain if defined $Domain;
-	return 0 if FAKE_NO_NET_DOMAIN;
+    return $Domain if defined $Domain;
+    return 0 if FAKE_NO_NET_DOMAIN;
 
-	$Domain = eval {require Net::Domain};
+    $Domain = eval {require Net::Domain};
 }
 
 sub _have_mail_send {
-	my $self = shift;
-	warn __PACKAGE__, ": _have_mail_send\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _have_mail_send\n" if $self->debug();
 
-	return $Send if defined $Send;
-	return 0 if FAKE_NO_MAIL_SEND;
+    return $Send if defined $Send;
+    return 0 if FAKE_NO_MAIL_SEND;
 
-	$Send = eval {require Mail::Send};
-}
-
-sub _start_editor_mac {
-	my $self = shift;
-	warn __PACKAGE__, ": _start_editor_mac\n" if $self->debug();
-
-	my $editor = shift;
-
-	use vars '%Application';
-	for my $mod (qw(Mac::MoreFiles Mac::AppleEvents::Simple Mac::AppleEvents)) {
-		eval qq(require $mod) or die __PACKAGE__, ": Can't load $mod; \$\@: $@\n";
-		eval qq($mod->import());
-	}
-
-	my $app = $Application{$editor};
-	die __PACKAGE__, ": Application with ID '$editor' not found.\n" if !$app;
-
-	my $obj = 'obj {want:type(cobj), from:null(), ' .
-		'form:enum(name), seld:TEXT(@)}';
-	my $evt = do_event(qw/aevt odoc MACS/,
-		"'----': $obj, usin: $obj", $Report, $app);
-
-	if (my $err = AEGetParamDesc($evt->{REP}, 'errn')) {
-		die __PACKAGE__, ": AppleEvent error: ${\AEPrint($err)}.\n";
-	}
-
-	$self->_prompt('Done?', 'Yes') if $MacMPW;
-	MacPerl::Answer('Done?') if $MacApp;
+    $Send = eval {require Mail::Send};
 }
 
 sub _start_editor {
-	my $self = shift;
-	warn __PACKAGE__, ": _start_editor\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _start_editor\n" if $self->debug();
 
-	my $editor = $ENV{VISUAL} || $ENV{EDITOR} || $ENV{EDIT}
-		|| ($^O eq 'VMS'     and "edit/tpu")
-		|| ($^O eq 'MSWin32' and "notepad")
-		|| ($^O eq 'MacOS'   and 'ttxt')
-		|| 'vi';
+    my $editor = $ENV{VISUAL} || $ENV{EDITOR} || $ENV{EDIT}
+        || ($^O eq 'VMS'     and "edit/tpu")
+        || ($^O eq 'MSWin32' and "notepad")
+        || 'vi';
 
-	$editor = $self->_prompt('Editor', $editor) unless $MacApp;
+    $editor = $self->_prompt('Editor', $editor);
 
-	if ($^O eq 'MacOS') {
-		$self->_start_editor_mac($editor);
-	}
-	else {
-		die __PACKAGE__, ": The editor `$editor' could not be run" if system "$editor $Report";
-		die __PACKAGE__, ": Report has disappeared; terminated" unless -e $Report;
-		die __PACKAGE__, ": Empty report; terminated" unless -s $Report > 2;
-	}
+    die __PACKAGE__, ": The editor `$editor' could not be run" if system "$editor $Report";
+    die __PACKAGE__, ": Report has disappeared; terminated" unless -e $Report;
+    die __PACKAGE__, ": Empty report; terminated" unless -s $Report > 2;
 }
 
 sub _prompt {
-	my $self = shift;
-	warn __PACKAGE__, ": _prompt\n" if $self->debug();
+    my $self = shift;
+    warn __PACKAGE__, ": _prompt\n" if $self->debug();
 
-	my ($label, $default) = @_;
+    my ($label, $default) = @_;
 
-	printf "$label%s", ($MacMPW ? ":\n$default" : " [$default]: ");
-	my $input = scalar <STDIN>;
-	chomp $input;
+    printf "$label%s", (" [$default]: ");
+    my $input = scalar <STDIN>;
+    chomp $input;
 
-	return (length $input) ? $input : $default;
+    return (length $input) ? $input : $default;
+}
+
+# From Mail::Util 1.74 (c) 1995-2001 Graham Barr (c) 2002-2005 Mark Overmeer
+sub _maildomain {
+    my $self = shift;
+    warn __PACKAGE__, ": _maildomain\n" if $self->debug();
+
+    my $domain = $ENV{MAILDOMAIN};
+
+    return $domain if defined $domain;
+
+    local *CF;
+    local $_;
+
+    my @sendmailcf = qw(
+        /etc /etc/sendmail /etc/ucblib /etc/mail /usr/lib /var/adm/sendmail
+    );
+
+    my $config = (grep(-r, map("$_/sendmail.cf", @sendmailcf)))[0];
+
+    if (defined $config && open(CF, $config)) {
+        my %var;
+        while (<CF>) {
+            if (my ($v, $arg) = /^D([a-zA-Z])([\w.\$\-]+)/) {
+                $arg =~ s/\$([a-zA-Z])/exists $var{$1} ? $var{$1} : '$'.$1/eg;
+                $var{$v} = $arg;
+            }
+        }
+        close(CF) || die $!;
+        $domain = $var{j} if defined $var{j};
+        $domain = $var{M} if defined $var{M};
+
+        $domain = $1
+            if ($domain && $domain =~ m/([A-Za-z0-9](?:[\.\-A-Za-z0-9]+))/);
+
+        undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+
+        return $domain if (defined $domain && $domain !~ /\$/);
+    }
+
+    if (open(CF, "/usr/lib/smail/config")) {
+        while (<CF>) {
+            if (/\A\s*hostnames?\s*=\s*(\S+)/) {
+                $domain = (split(/:/,$1))[0];
+                undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+                last if defined $domain and $domain;
+            }
+        }
+        close(CF) || die $!;
+
+        return $domain if defined $domain;
+    }
+
+    if (eval {require Net::SMTP}) {
+        my $host;
+
+        for $host (qw(mailhost localhost)) {
+            my $smtp = eval {Net::SMTP->new($host)};
+
+            if (defined $smtp) {
+                $domain = $smtp->domain;
+                $smtp->quit;
+                undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+                last if defined $domain and $domain;
+            }
+        }
+    }
+
+    unless (defined $domain) {
+        if ($self->_have_net_domain()) {
+            $domain = Net::Domain::domainname();
+            undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+        }
+    }
+
+    $domain = "localhost" unless defined $domain;
+
+    return $domain;
+}
+
+# From Mail::Util 1.74 (c) 1995-2001 Graham Barr (c) 2002-2005 Mark Overmeer
+sub _mailaddress {
+    my $self = shift;
+    warn __PACKAGE__, ": _mailaddress\n" if $self->debug();
+
+    my $mailaddress = $ENV{MAILADDRESS};
+    $mailaddress ||= $ENV{USER}    ||
+                     $ENV{LOGNAME} ||
+                     eval {getpwuid($>)} ||
+                     "postmaster";
+    $mailaddress .= '@' . $self->_maildomain() unless $mailaddress =~ /\@/;
+    $mailaddress =~ s/(^.*<|>.*$)//g;
+
+    my $realname = $self->_realname();
+    if ($realname) {
+        $mailaddress = "$mailaddress ($realname)";
+    }
+
+    return $mailaddress;
+}
+
+sub _realname {
+    my $self = shift;
+    warn __PACKAGE__, ": _realname\n" if $self->debug();
+
+    my $realname = '';
+
+    $realname =
+        eval {(split /,/, (getpwuid($>))[6])[0]} ||
+        $ENV{QMAILNAME}                          ||
+        $ENV{REALNAME}                           ||
+        $ENV{USER};
+
+    return $realname;
+}
+
+sub _is_a_perl_release {
+    shift; # don't need it..
+    my $perl = shift;
+
+    return $perl =~ /^perl-?\d\.\d/;
 }
 
 =head1 NAME
@@ -699,7 +833,8 @@ see 'send' below for more information.
 Optional. Gets or sets the e-mail address of the individual submitting
 the test report, i.e. "afoxson@pobox.com (Adam Foxson)". This is
 mostly of use to testers running under Windows, since Test::Reporter
-will usually figure this out automatically.
+will usually figure this out automatically. Alternatively, you can use
+the MAILADDRESS environmental variable to accomplish the same.
 
 =item * B<grade>
 
@@ -818,14 +953,31 @@ to relay for anything other than perl.org and cpan.org.
 
 =head1 BUGS
 
-If you happen to find one please email me at afoxson@pobox.com, and/or report
-it to the below URL. Thank you.
+Unfortunately, we are unable to accept tickets filed with RT. As such, please
+file bug reports and enhancement suggestions at our GoogleCode project site:
 
-  http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-Reporter
+  http://code.google.com/p/test-reporter/issues/list
+
+Patches are most welcome. And, where possible, we prefer patches in the
+unified diff format (diff -u). Thank you, kindly.
+
+=head1 EXTERNAL RESOURCES
+
+Project page:
+
+  http://code.google.com/p/test-reporter/
+
+Discussion group:
+
+  http://groups.google.com/group/test-reporter
+
+Subversion repository information page:
+
+  http://code.google.com/p/test-reporter/source
 
 =head1 COPYRIGHT
 
-Copyright (c) 2003 Adam J. Foxson. All rights reserved.
+Copyright (c) 2007 Adam J. Foxson. All rights reserved.
 
 =head1 LICENSE
 

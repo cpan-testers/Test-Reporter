@@ -1,11 +1,11 @@
 #!/usr/bin/perl -w
 
-# $Id: cpantest,v 1.7 2003/02/25 08:45:05 afoxson Exp $
-# $Revision: 1.7 $
+# $Id: cpantest 49 2007-06-26 00:23:52Z afoxson $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.28/bin/cpantest $
 
 # cpantest - sends test results to cpan-testers@perl.org
 # Copyright (c) 2003 Adam J. Foxson. All rights reserved.
-# Copyright (c) 2002 Autrijus Tango. All rights reserved.
+# Copyright (c) 2002 Autrijus Tang. All rights reserved.
 # Copyright (c) 1999 Kurt Starsinic. All rights reserved.
 
 # This program is free software; you can redistribute it and/or modify
@@ -19,22 +19,20 @@ use strict;
 use Cwd;
 use Getopt::Long;
 use File::Temp;
-use Test::Reporter 1.23;
+use Test::Reporter;
 use vars qw(
-	$VERSION $Grade $Package $No_comment $Automatic $Comment_text $Comment_file
-	$MacMPW $MacApp %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump
+    $VERSION $Grade $Package $No_comment $Automatic $Comment_text $Comment_file
+    %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump $Perl_version
 );
 
-$VERSION       = 1.8;
+$VERSION       = '1.29_01';
 ($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
-$MacMPW        = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
-$MacApp        = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
 $Reporter      = Test::Reporter->new();
 %Grades        = (
-	'pass'     => "all tests pass",
-	'fail'     => "some tests fail",
-	'na'       => "package will not work on this platform",
-	'unknown'  => "package did not include tests",
+    'pass'     => "all tests pass",
+    'fail'     => "some tests fail",
+    'na'       => "package will not work on this platform",
+    'unknown'  => "package did not include tests",
 );
 
 &get_opts();
@@ -46,261 +44,220 @@ $Reporter      = Test::Reporter->new();
 &get_package() if not $Package;
 &get_subject();
 &get_via();
+&get_tested_perl() if $Perl_version;
+
 if ($Dump) {
-	my $fh; open($fh, '>-') or die "Can't open STDOUT: $!";
-	print $Reporter->write($fh);
+    my $fh; open($fh, '>-') or die "Can't open STDOUT: $!";
+    print $Reporter->write($fh);
 } else {
-	&confirm_send() if not $Automatic;
-	&send();
-}
-
-sub DoMacOptions {
-	require File::Basename;
-
-	if ($ARGV[0]) {
-		($Package = File::Basename::basename($ARGV[0])) =~ s/\.t(?:ar\.)?gz$//;
-	}
-
-	$Package    = MacPerl::Ask('Package Name?', $Package);
-	$Grade      = MacPerl::Pick('What Grade?', qw(pass fail unknown na));
-	$No_comment = MacPerl::Answer('Comment on submission?', qw(No Yes));
-	$From	    = MacPerl::Ask('From what address?');
-	$CC         = MacPerl::Ask('Cc: to address?');
-	$Automatic  = 1;
+    &confirm_send() if not $Automatic;
+    &send();
 }
 
 sub usage {
-	my ($message) = @_;
+    my ($message) = @_;
 
-	print "Error:  $message\n" if defined $message;
-	print "Usage:\n";
-	print "  cpantest -g grade [ -nc ] [ -auto ] [ -p package ]\n";
-	print "           [ -t text | -f file ] [ -from user\@example.com ]\n";
-	print "           [ -dump | email-addresses ]\n";
-	print "  -g grade  Indicates the status of the tested package.\n";
-	print "            Possible values for grade are:\n";
+    print "Error:  $message\n" if defined $message;
+    print "Usage:\n";
+    print "  cpantest -g grade [ -nc ] [ -auto ] [ -p package ]\n";
+    print "           [ -t text | -f file ] [ -from user\@example.com ]\n";
+    print "           [ -perl-version path_to_perl ]\n";
+    print "           [ -dump | email-addresses ]\n";
+    print "  -g grade  Indicates the status of the tested package.\n";
+    print "            Possible values for grade are:\n";
 
-	for (keys %Grades) {
-		printf "              %-10s  %s\n", $_, $Grades{$_};
-	}
+    for (keys %Grades) {
+        printf "              %-10s  %s\n", $_, $Grades{$_};
+    }
 
-	print "  -from     Specify the From: address.\n";
-	print "  -t        Specify a short comment.\n";
-	print "  -f        Specify a file containing comments.\n";
-	print "  -p        Specify the name of the distribution tested.\n";
-	print "  -nc       No comment; you will not be prompted to comment on\n";
-	print "            the package.\n";
-	print "  -auto     Autosubmission (non-interactive); implies -nc.\n";
-	print "  -dump     Print the report instead of emailing it.\n";
+    print "  -from         Specify the From: address.\n";
+    print "  -t            Specify a short comment.\n";
+    print "  -f            Specify a file containing comments.\n";
+    print "  -p            Specify the name of the distribution tested\n";
+    print "                (e.g.: Test-Reporter-1.27).\n";
+    print "  -nc           No comment; you will not be prompted to comment on\n";
+    print "                the package.\n";
+    print "  -auto         Autosubmission (non-interactive); implies -nc.\n";
+    print "  -dump         Print the report instead of emailing it.\n";
+    print "  -perl-version Specify an alternate perl under which the distribution was tested.\n";
 
-	exit 1;
+    exit 1;
 }
 
 sub get_opts {
-	if ($MacApp) {
-		DoMacOptions();
-	}
-	else {
-		GetOptions(
-			'g=s',  \$Grade,
-			'p=s',  \$Package,
-			'nc',   \$No_comment,
-			'auto', \$Automatic,
-			't=s',  \$Comment_text,
-			'f=s',  \$Comment_file,
-			'from=s',  \$From,
-			'dump', \$Dump,
-		) or usage();
+    GetOptions(
+        'g=s',  \$Grade,
+        'p=s',  \$Package,
+        'nc',   \$No_comment,
+        'auto', \$Automatic,
+        't=s',  \$Comment_text,
+        'f=s',  \$Comment_file,
+        'from=s',  \$From,
+        'dump', \$Dump,
+        'perl-version=s', \$Perl_version,
+    ) or usage();
 
-		$CC         = join ' ', @ARGV;
-		$No_comment = 1 if ($Automatic && !$Comment_text && !$Comment_file);
-	}
-	$Reporter->from($From) if $From;
+    $CC         = join ' ', @ARGV;
+    $No_comment = 1 if ($Automatic && !$Comment_text && !$Comment_file);
+    $Reporter->from($From) if $From;
 }
 
 sub check_opts {
-	usage("-g <grade> is required")    unless defined $Grade;
-	usage("grade `$Grade' is invalid") unless defined $Grades{$Grade};
-	usage("-p is required with -auto") if $Automatic and !$Package;
-	usage("can't have both -f and -t") if $Comment_text and $Comment_file;
+    usage("-g <grade> is required")    unless defined $Grade;
+    usage("grade `$Grade' is invalid") unless defined $Grades{$Grade};
+    usage("-p is required with -auto") if $Automatic and !$Package;
+    usage("can't have both -f and -t") if $Comment_text and $Comment_file;
 }
 
 sub get_comment_file {
-	local $/;
-	open FH, $Comment_file or die "Can't open comment file: $!";
-	$Comment_text = <FH>;
-	close FH or die "Can't close comment file: $!";
+    local $/;
+    open FH, $Comment_file or die "Can't open comment file: $!";
+    $Comment_text = <FH>;
+    close FH or die "Can't close comment file: $!";
 }
 
 sub set_comment {
-	chomp $Comment_text if $Comment_text;
+    chomp $Comment_text if $Comment_text;
 
-	my $comment = $Comment_text ?  $Comment_text : '[ insert comments here ]';
+    my $comment = $Comment_text ?  $Comment_text : '[ insert comments here ]';
 
-	$Reporter->comments($comment);
-	print $Tempfile $Reporter->report();
-	close $Tempfile;
+    $Reporter->comments($comment);
+    print $Tempfile $Reporter->report();
+    close $Tempfile;
 }
 
 # Given an author identifier (either a CPAN authorname or a proper
 # email address), return a proper email address.
 sub expand_author {
-	my ($author) = @_;
+    my ($author) = @_;
 
-	if ($author =~ /^[-A-Z]+$/) {   # Smells like a CPAN authorname
-		eval { require CPAN } or return undef;
+    if ($author =~ /^[-A-Z]+$/) {   # Smells like a CPAN authorname
+        eval { require CPAN } or return undef;
 
-		my $cpan_author = CPAN::Shell->expand("Author", $author);
+        my $cpan_author = CPAN::Shell->expand("Author", $author);
 
-		return eval { $cpan_author->email };
-	}
-	elsif ($author =~ /^\S+@[a-zA-Z0-9\.-]+$/) {
-		return $author;
-	}
+        return eval { $cpan_author->email };
+    }
+    elsif ($author =~ /^\S+@[a-zA-Z0-9\.-]+$/) {
+        return $author;
+    }
 
-	return undef;
+    return undef;
 }
 
 # Prompt for a new value for $label, given $default; return the user's
 # selection.
 sub prompt {
-	my ($label, $default) = @_;
+    my ($label, $default) = @_;
 
-	printf "$label%s", ($MacMPW ? ":\n$default" : " [$default]: ");
-	my $input = scalar <STDIN>;
-	chomp $input;
+    printf "$label%s", (" [$default]: ");
+    my $input = scalar <STDIN>;
+    chomp $input;
 
-	return (length $input) ? $input : $default;
+    return (length $input) ? $input : $default;
 }
 
 sub ask_cc {
-	my $cc = prompt('CC', 'none');
+    my $cc = prompt('CC', 'none');
 
-	return ($cc eq 'none') ? undef : expand_author($cc);
-}
-
-sub start_editor_mac {
-	my $editor = shift;
-
-	use vars '%Application';
-	for my $mod (qw(Mac::MoreFiles Mac::AppleEvents::Simple Mac::AppleEvents)) {
-		eval qq(require $mod) or die "die: Can't load $mod.\n";
-		eval qq($mod->import());
-	}
-
-	my $app = $Application{$editor};
-	die "Application with ID '$editor' not found.\n" if !$app;
-
-	my $obj = 'obj {want:type(cobj), from:null(), ' .
-				'form:enum(name), seld:TEXT(@)}';
-	my $evt = do_event(qw/aevt odoc MACS/,
-				"'----': $obj, usin: $obj", $Report, $app);
-
-	if (my $err = AEGetParamDesc($evt->{REP}, 'errn')) {
-		die "AppleEvent error: ${\AEPrint($err)}.\n";
-	}
-
-	prompt('Done?', 'Yes') if $MacMPW;
-	MacPerl::Answer('Done?') if $MacApp;
+    return ($cc eq 'none') ? undef : expand_author($cc);
 }
 
 sub start_editor {
-	my $editor = $ENV{VISUAL} || $ENV{EDITOR} || $ENV{EDIT}
-					|| ($^O eq 'VMS'     and "edit/tpu")
-					|| ($^O eq 'MSWin32' and "notepad")
-					|| ($^O eq 'MacOS'   and 'ttxt')
-					|| 'vi';
+    my $editor = $ENV{VISUAL} || $ENV{EDITOR} || $ENV{EDIT}
+                    || ($^O eq 'VMS'     and "edit/tpu")
+                    || ($^O eq 'MSWin32' and "notepad")
+                    || 'vi';
 
-	$editor = prompt('Editor', $editor) unless $MacApp or $Automatic;
+    $editor = prompt('Editor', $editor) unless $Automatic;
 
-	if ($^O eq 'MacOS') {
-		&start_editor_mac($editor);
-	}
-	else {
-		die "The editor `$editor' could not be run" if system "$editor $Report";
-		die "Empty report; terminated" unless -s $Report > 2;
-	}
-	$CC ||= ask_cc() unless $MacApp or $Automatic;
+    die "The editor `$editor' could not be run" if system "$editor $Report";
+    die "Empty report; terminated" unless -s $Report > 2;
+    $CC ||= ask_cc() unless $Automatic;
 }
 
 sub get_comment {
-	$Reporter->comments('');
+    $Reporter->comments('');
 
-	if ($Comment_text and not $Comment_file) {
-		$Reporter->comments($Comment_text);
-		return;
-	}
-	
-	my $comment;
-	my $skip = 1;
+    if ($Comment_text and not $Comment_file) {
+        $Reporter->comments($Comment_text);
+        return;
+    }
 
-	open REPORT, $Report or die $!;
-	while (<REPORT>) {
-		if ($_ =~ /^--$/) {
-			$skip = not $skip;
-			next;
-		}
-		next if $skip;
-		$comment .= $_;
-	}
-	close REPORT or die $!;
+    my $comment;
+    my $skip = 1;
 
-	chomp $comment if $comment;
+    open REPORT, $Report or die $!;
+    while (<REPORT>) {
+        if ($_ =~ /^--$/) {
+            $skip = not $skip;
+            next;
+        }
+        next if $skip;
+        $comment .= $_;
+    }
+    close REPORT or die $!;
 
-	if ($comment and $comment ne '[ insert comments here ]')
-	{
-		$Reporter->comments($comment);
-	}
+    chomp $comment if $comment;
+
+    if ($comment and $comment ne '[ insert comments here ]')
+    {
+        $Reporter->comments($comment);
+    }
 }
 
 sub get_package {
-	$Package = cwd();
-	$Package =~ s:.*/::;
-	$Package = prompt('Package', $Package);
+    $Package = cwd();
+    $Package =~ s:.*/::;
+    $Package = prompt('Package', $Package);
 }
 
 sub get_subject {
-	$Reporter->grade($Grade);
-	$Reporter->distribution($Package);
-	$Subject = $Reporter->subject();
+    $Reporter->grade($Grade);
+    $Reporter->distribution($Package);
+    $Subject = $Reporter->subject();
 }
 
 sub get_via {
-	$Reporter->via("cpantest $VERSION");
+    $Reporter->via("cpantest $VERSION");
+}
+
+sub get_tested_perl {
+   $Reporter->perl_version($Perl_version);
 }
 
 sub confirm_send {
-	$Subject = prompt('Subject', $Subject);
+    $Subject = prompt('Subject', $Subject);
 
-	print "\n";
-	print "Subject:  $Subject\n";
-	print "To:  " . $Reporter->address() . "\n";
-	print "Cc:  $CC\n" if defined $CC;
+    print "\n";
+    print "Subject:  $Subject\n";
+    print "To:  " . $Reporter->address() . "\n";
+    print "Cc:  $CC\n" if defined $CC;
 
-	if (prompt('S)end/I)gnore', 'Ignore') !~ /^[Ss]/) {
-		print "Ignoring message.\n";
-		exit 1;
-	}
+    if (prompt('S)end/I)gnore', 'Ignore') !~ /^[Ss]/) {
+        print "Ignoring message.\n";
+        exit 1;
+    }
 }
 
 sub send {
-	if (defined $CC) {
-		my @recipients = split /\s+/, $CC;
-		$Reporter->send(@recipients) || die $Reporter->errstr();
-	}
-	else {
-		$Reporter->send() || die $Reporter->errstr();
-	}
+    if (defined $CC) {
+        my @recipients = split /\s+/, $CC;
+        $Reporter->send(@recipients) || die $Reporter->errstr();
+    }
+    else {
+        $Reporter->send() || die $Reporter->errstr();
+    }
 
-	&log() if $ENV{CPANTEST_LOG};
+    &log() if $ENV{CPANTEST_LOG};
 }
 
 sub log {
-	open(LOG,">>$ENV{CPANTEST_LOG}") or
-		die "Unable to open $ENV{CPANTEST_LOG}";
-	my $time = localtime;
-	print LOG "$Subject $time\n";
-	close(LOG);
+    open(LOG,">>$ENV{CPANTEST_LOG}") or
+        die "Unable to open $ENV{CPANTEST_LOG}";
+    my $time = localtime;
+    print LOG "$Subject $time\n";
+    close(LOG);
 }
 
 __END__
@@ -318,9 +275,6 @@ cpan-testers project.  See B<http://testers.cpan.org/> for details.
 
     cpantest -g grade [ -nc ] [ -auto ] [ -p package ]
              [ -t text | -f file ] [ email-addresses ]
-
-For MacPerl, save as a droplet, and drop a module archive
-or unpacked folder on the droplet.
 
 =head1 OPTIONS
 
@@ -342,6 +296,8 @@ tests, and is one of:
 
 I<package> is the name of the package you are testing.  If you don't
 supply a value on the command line, you will be prompted for one.
+
+For example: Test-Reporter-1.27
 
 =item -nc
 
@@ -367,6 +323,12 @@ information that you didn't provide on the command line.  Implies I<-nc>.
 A list of additional email addresses that should be cc:'d in this
 report (typically, the package's author).
 
+=item perl-version perl
+
+An alternate version of perl on which the distribution was tested.
+This option allows reporting on versions of perl for which Test::Reporter
+is not installed.
+
 =back
 
 =head1 AUTHORS
@@ -380,7 +342,7 @@ from the CPAN Testers E<lt>F<cpan-testers@perl.org>E<gt>.
 
 =head1 COPYRIGHT
 
-	Copyright (c) 2003 Adam J. Foxson. All rights reserved. 
+    Copyright (c) 2003 Adam J. Foxson. All rights reserved. 
     Copyright (c) 2002 Autrijus Tang. All rights reserved.
     Copyright (c) 1999 Kurt Starsinic. All rights reserved.
 

@@ -1,1 +1,9 @@
 ^[a-z]+.Test-Reporter-.*.rpt$
+.svn/
+blib/
+Makefile$
+Makefile.old
+MANIFEST.bak
+META.yml
+pm_to_blib
+.swp$
