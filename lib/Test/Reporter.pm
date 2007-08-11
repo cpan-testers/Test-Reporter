@@ -25,7 +25,7 @@ use vars qw($VERSION $AUTOLOAD $Tempfile $Report $MacMPW $MacApp $DNS $Domain $S
 
 $MacMPW    = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
 $MacApp    = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
-$VERSION = '1.25';
+$VERSION = '1.26';
 
 local $^W;
 
@@ -186,10 +186,21 @@ sub grade {
 }
 
 sub edit_comments {
-	my $self = shift;
+    my($self, %args) = @_;
 	warn __PACKAGE__, ": edit_comments\n" if $self->debug();
 
-	($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
+    my %tempfile_args = (
+        UNLINK => 1,
+        SUFFIX => '.txt',
+    );
+
+    if (exists $args{'suffix'} && defined $args{'suffix'} && length $args{'suffix'}) {
+        $tempfile_args{SUFFIX} = $args{'suffix'};
+        # prefix the extension with a period, if the user didn't.
+        $tempfile_args{SUFFIX} =~ s/^(?!\.)(?=.)/./;
+    }
+
+	($Tempfile, $Report) = File::Temp::tempfile(%tempfile_args);
 
 	print $Tempfile $self->{_comments};
 
@@ -665,7 +676,16 @@ commonly used for distributions that did not pass a 'make test'.
 
 Optional. Allows one to interactively edit the comments within a text
 editor. comments() doesn't have to be first specified, but it will work
-properly if it was.
+properly if it was.  Accepts an optional hash of arguments:
+
+=over 4
+
+=item * B<suffix>
+
+Optional. Allows one to specify the suffix ("extension") of the temp
+file used by B<edit_comments>.  Defaults to '.txt'.
+
+=back
 
 =item * B<errstr>
 
