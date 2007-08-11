@@ -8,7 +8,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 116 }
+BEGIN { plan tests => 117 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -224,3 +224,5 @@ ok(not $reporter->_is_a_perl_release('Perl-Squish-0.02'));
 ok(not $reporter->_is_a_perl_release('Perl-Visualize-1.02'));
 
 ok($reporter->message_id =~ /^<\d+\.[^.]+\.\d+@[^>]+>$/);
+
+ok($reporter->_format_date() =~ /^\w{3},\s\d{1,2}\s\w{3}\s\d{4}\s\d{2}:\d{2}:\d{2}\s[-+]\d{4}$/);

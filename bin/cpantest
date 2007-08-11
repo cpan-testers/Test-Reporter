@@ -25,7 +25,7 @@ use vars qw(
     %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump $Perl_version
 );
 
-$VERSION       = '1.30';
+$VERSION       = '1.32';
 ($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
 $Reporter      = Test::Reporter->new();
 %Grades        = (

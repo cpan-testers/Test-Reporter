@@ -20,14 +20,14 @@ use Carp;
 use Net::SMTP;
 use FileHandle;
 use File::Temp;
-use POSIX ();
 use Sys::Hostname;
+use Time::Local ();
 use vars qw($VERSION $AUTOLOAD $Tempfile $Report $DNS $Domain $Send);
 use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.30';
+$VERSION = '1.32';
 
 local $^W = 1;
 
@@ -425,7 +425,7 @@ sub _send_smtp {
     $success += $smtp->to($self->{_address});
     $success += $smtp->cc(@recipients) if @recipients;
     $success += $smtp->data();
-    $success += $smtp->datasend("Date: ", POSIX::strftime("%a, %e %b %Y %T %z", localtime(time)), "\n");
+    $success += $smtp->datasend("Date: ", $self->_format_date, "\n");
     $success += $smtp->datasend("Subject: ", $self->subject(), "\n");
     $success += $smtp->datasend("From: $from\n");
     $success += $smtp->datasend("To: ", $self->{_address}, "\n");
@@ -738,6 +738,40 @@ sub _is_a_perl_release {
     my $perl = shift;
 
     return $perl =~ /^perl-?\d\.\d/;
+}
+
+
+# Next two subs courtesy of Casey West, Ricardo SIGNES, and Email::Date
+# Visit the Perl Email Project at: http://emailproject.perl.org/
+sub _tz_diff {
+    my $self = shift;
+    my ($time) = @_;
+
+    my $diff  =   Time::Local::timegm(localtime $time)
+                - Time::Local::timegm(gmtime    $time);
+
+    my $direc = $diff < 0 ? '-' : '+';
+       $diff  = abs $diff;
+    my $tz_hr = int( $diff / 3600 );
+    my $tz_mi = int( $diff / 60 - $tz_hr * 60 );
+
+    return ($direc, $tz_hr, $tz_mi);
+}
+
+sub _format_date {
+    my $self = shift;
+    my ($time) = @_;
+    $time = time unless defined $time;
+
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday) = (localtime $time);
+    my $day   = (qw[Sun Mon Tue Wed Thu Fri Sat])[$wday];
+    my $month = (qw[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec])[$mon];
+    $year += 1900;
+
+    my ($direc, $tz_hr, $tz_mi) = $self->_tz_diff($time);
+
+    sprintf "%s, %d %s %d %02d:%02d:%02d %s%02d%02d",
+      $day, $mday, $month, $year, $hour, $min, $sec, $direc, $tz_hr, $tz_mi;
 }
 
 =head1 NAME

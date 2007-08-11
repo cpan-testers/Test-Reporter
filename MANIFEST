@@ -5,10 +5,10 @@ lib/Test/Reporter.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
+META.yml			Module meta-data (added by MakeMaker)
 README
 SIGNATURE
 t/0-signature.t
 t/1-reporter.t
 t/98-pod.t
 t/99-pod_coverage.t
-META.yml                                 Module meta-data (added by MakeMaker)

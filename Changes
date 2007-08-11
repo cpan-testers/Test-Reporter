@@ -3,118 +3,126 @@
 
 Revision history for Perl extension Test::Reporter.
 
+1.32    Sun Jul 29 06:30:00 EDT 2007
+        - Fixed an issue (8@Google) whereby test reports had Date headers that
+          were not RFC-822 complaint (reported by Serguei Trouchelle)
+
 1.30    Wed Jul 18 04:50:00 EDT 2007
         - Public release of all activity against 1.29_0* (see below)
         - Additionally, updated some documentation and added more tests
 
-1.29_04  Wed Jun 27 13:20:00 CDT 2007
-    - Added t/0-signature.t to test the SIGNATURE
-    - Renamed t/reporter.t to t/1-reporter.t
-    - Adjusted Makefile.PL to support dist-time signing
+1.29_04 Wed Jun 27 13:20:00 CDT 2007
+        - Added t/0-signature.t to test the SIGNATURE
+        - Renamed t/reporter.t to t/1-reporter.t
+        - Adjusted Makefile.PL to support dist-time signing
 
-1.29_03  Wed Jun 27 02:30:00 CDT 2007
-    - We now explicitly specify the license (same terms as perl itself) in the
-      Makefile.PL, which eventually makes it into the auto-generated META.yml
+1.29_03 Wed Jun 27 02:30:00 CDT 2007
+        - We now explicitly specify the license (same terms as perl itself) in
+          the Makefile.PL, which eventually makes it into the auto-generated
+          META.yml
 
-1.29_02  Tue Jun 26 16:00:00 CDT 2007
-    - Fixed a portability bug in t/reporter.t. Reported by David Golden.
-      See 6@Google for more information
+1.29_02 Tue Jun 26 16:00:00 CDT 2007
+        - Fixed a portability bug in t/reporter.t. Reported by David Golden.
+          See 6@Google for more information
 
-1.29_01  Tue Jun 26 01:30:00 CDT 2007
-    - Switched from RT to Google Code for defect and enhancement tracking.
-      Please visit: http://code.google.com/p/test-reporter/
-    - warnings enabled for Reporter.pm
-    - TODO file removed; moved to POD
-    - MacPerl (i.e., pre OS X) support dropped for Test::Reporter
-    - MacPerl (i.e., pre OS X) support dropped for cpantest
-    - Incorporated suggestion from MIROD; add documentation to describe what a
-      package should look like (14376)
-    - Incorporated patch from SAPER; compatibility for write() under
-      5.004 (14148)
-    - Incorporated suggestion from CLACO; updated MX for perl.org (11370)
-    - Incorporated suggestion from an anonymous individual: when an MX
-      connection failure occurs, show the failing MX server, if debugging
-      is on (14626)
-    - Changes indentation style of code from tabs to spaces
-    - Added Id and HeadURL subversion tokens
-    - Removed dependencies on Date::Format and Time::Zone
-    - Unbundled Mail::Util; Now integrated into Reporter.pm
-    - Incorporated patch from MIROD; support for reporting tests on
-      non-standard versions of perl (14375)
-    - Added more tests to the T::R test suite (more than doubled quantity)
-    - We now refuse to report results against perl itself; use perlbug
-    - Added Message-IDs to emails sent via SMTP per tom at eborcom dot com
+1.29_01 Tue Jun 26 01:30:00 CDT 2007
+        - Switched from RT to Google Code for defect and enhancement tracking.
+          Please visit: http://code.google.com/p/test-reporter/
+        - warnings enabled for Reporter.pm
+        - TODO file removed; moved to POD
+        - MacPerl (i.e., pre OS X) support dropped for Test::Reporter
+        - MacPerl (i.e., pre OS X) support dropped for cpantest
+        - Incorporated suggestion from MIROD; add documentation to describe
+          what a package should look like (14376)
+        - Incorporated patch from SAPER; compatibility for write() under
+          5.004 (14148)
+        - Incorporated suggestion from CLACO; updated MX for perl.org (11370)
+        - Incorporated suggestion from an anonymous individual: when an MX
+          connection failure occurs, show the failing MX server, if debugging
+          is on (14626)
+        - Changes indentation style of code from tabs to spaces
+        - Added Id and HeadURL subversion tokens
+        - Removed dependencies on Date::Format and Time::Zone
+        - Unbundled Mail::Util; Now integrated into Reporter.pm
+        - Incorporated patch from MIROD; support for reporting tests on
+          non-standard versions of perl (14375)
+        - Added more tests to the T::R test suite (more than doubled quantity)
+        - We now refuse to report results against perl itself; use perlbug
+        - Added Message-IDs to emails sent via SMTP per tom at eborcom dot com
 
-1.27  Mon Jan 17 15:51:00 2005
-    - don't try to use Mail::Send on Windows
+1.27    Mon Jan 17 15:51:00 2005
+        - don't try to use Mail::Send on Windows
 
-1.26  Thu Dec 30 19:03:00 2004
-    - add support for a user-specified suffix in edit_comments()
-    - add a suffix of '.txt' to the tempfile when editing comments
-    - update changes
+1.26    Thu Dec 30 19:03:00 2004
+        - add support for a user-specified suffix in edit_comments()
+        - add a suffix of '.txt' to the tempfile when editing comments
+        - update changes
 
-1.25  Thu Dec 30 19:02:00 2004
-    - reintegrate Reporter.pod into Reporter.pm
+1.25    Thu Dec 30 19:02:00 2004
+        - reintegrate Reporter.pod into Reporter.pm
 
-1.24  Thu Dec 30 19:02:00 2004
-    - correct MAN3EXT in Makefile.PL for Reporter.pod
+1.24    Thu Dec 30 19:02:00 2004
+        - correct MAN3EXT in Makefile.PL for Reporter.pod
 
-1.23  Sun Dec 26 10:17:00 2004
-    - add cpantest -from and -dump
-    - update T:R->write() to accept a second argument, filehandle object
-    - ucfirst'd globals that were lowercase
-    - fix pod man3 extension
-    - make tests autodetect release version
+1.23    Sun Dec 26 10:17:00 2004
+        - add cpantest -from and -dump
+        - update T:R->write() to accept a second argument, filehandle object
+        - ucfirst'd globals that were lowercase
+        - fix pod man3 extension
+        - make tests autodetect release version
 
-1.22  Sun Dec 26 09:23:00 2004
-    - restructured mx, recipient filter logic
-    - remove commented $VERSION to fix mlc 0.06 (cpanplus <= 0.050_04)
+1.22    Sun Dec 26 09:23:00 2004
+        - restructured mx, recipient filter logic
+        - remove commented $VERSION to fix mlc 0.06 (cpanplus <= 0.050_04)
 
-1.21  Sun Dec 26 07:57:00 2004
-    - fixed local hostname logic to skip /\.local$/ domains under OS X
+1.21    Sun Dec 26 07:57:00 2004
+        - fixed local hostname logic to skip /\.local$/ domains under OS X
 
-1.20  Wed Mar 05 04:03:07 2003
-    - fixed a minor bug with read()
+1.20    Wed Mar 05 04:03:07 2003
+        - fixed a minor bug with read()
 
-1.19  Wed Mar 05 03:03:07 2003
-    - added dir() -- specifies default directory to write report files to
-    - added write() -- writes a test report to disk
-    - added read() -- reads a test report from disk
-    - These three methods are used in situations where you test on a machine
-      that has port 25 blocked and there is no local MTA. You use write() on
-      the machine that you are testing from, and use read() on the machine
-      that you want to actually submit the reports from
+1.19    Wed Mar 05 03:03:07 2003
+        - added dir() -- specifies default directory to write report files to
+        - added write() -- writes a test report to disk
+        - added read() -- reads a test report from disk
+        - These three methods are used in situations where you test on a
+          machine that has port 25 blocked and there is no local MTA. You use
+          write() on the machine that you are testing from, and use read() on
+          the machine that you want to actually submit the reports from
 
-1.16  Tue Feb 25 04:00:00 2003
-    - abstract now matches PAUSE meta-data for this distribution
-    - better POD documentation
-    - header pass-through for X-Reported-Via, via via() -- this is useful for
-      third-party distributions, like CPANPLUS, that use Test::Reporter
-    - added 'debug' get/set method -- this is extremely verbose and primarily
-      of use for debugging Test::Reporter itself
-    - added 'address' get/set method -- specifies the e-mail address that the
-      reports should be sent to -- you shouldn't need this unless the CPAN
-      Tester's change the e-mail address to send report's to
-    - added 'from' get/set method -- specifies the e-mail address of the
-      individual doing the reporting -- you generally shouldn't need this as
-      Test::Reporter tries very hard to guess your e-mail address automatically
-    - added 'mx' get/set method -- specifies the MX's for perl.org -- you
-      really shouldn't need to use this unless the hardcoded MX's have
-      become wrong and you don't have Net::DNS installed
-    - the constructor now takes named parameters
-    - we now use Net::DNS to get MX's if Net::DNS is available
-    - we now use Net::Domain to better auto-guess the reporter's email address
-    - we now use Mail::Send to send reports, if it's available
-    - now cycles through all available MX servers, when using Net::SMTP
-    - added bin/cpantest
-    - T::R now allows testers to edit the report interactively via the
-      edit_comments() method
-    - T::R report's have been made less susceptible to being marked as spam
-    - "can't call method "mail" on an undefined value" bug fixed
-    - doubled the number of tests
-    - memoized certain methods
-    - bundling Date::Format and Time::Zone to assist in SMTP sends (for 'Date')
-    - bundling an updated Mail::Util
+1.16    Tue Feb 25 04:00:00 2003
+        - abstract now matches PAUSE meta-data for this distribution
+        - better POD documentation
+        - header pass-through for X-Reported-Via, via via() -- this is useful
+          for third-party distributions, like CPANPLUS, that use Test::Reporter
+        - added 'debug' get/set method -- this is extremely verbose and
+          primarily of use for debugging Test::Reporter itself
+        - added 'address' get/set method -- specifies the e-mail address that
+          the reports should be sent to -- you shouldn't need this unless the
+          CPAN Tester's change the e-mail address to send report's to
+        - added 'from' get/set method -- specifies the e-mail address of the
+          individual doing the reporting -- you generally shouldn't need this
+          as Test::Reporter tries very hard to guess your e-mail address
+          automatically
+        - added 'mx' get/set method -- specifies the MX's for perl.org -- you
+          really shouldn't need to use this unless the hardcoded MX's have
+          become wrong and you don't have Net::DNS installed
+        - the constructor now takes named parameters
+        - we now use Net::DNS to get MX's if Net::DNS is available
+        - we now use Net::Domain to better auto-guess the reporter's email
+          address
+        - we now use Mail::Send to send reports, if it's available
+        - now cycles through all available MX servers, when using Net::SMTP
+        - added bin/cpantest
+        - T::R now allows testers to edit the report interactively via the
+          edit_comments() method
+        - T::R report's have been made less susceptible to being marked as spam
+        - "can't call method "mail" on an undefined value" bug fixed
+        - doubled the number of tests
+        - memoized certain methods
+        - bundling Date::Format and Time::Zone to assist in SMTP sends (for
+          'Date')
+        - bundling an updated Mail::Util
 
-1.13  Sun Aug 12 03:20:08 2002
-    - initial beta release
+1.13    Sun Aug 12 03:20:08 2002
+        - initial beta release

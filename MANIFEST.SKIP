@@ -1,9 +1,9 @@
 ^[a-z]+.Test-Reporter-.*.rpt$
 .svn/
+.git/
 blib/
 Makefile$
 Makefile.old
 MANIFEST.bak
-META.yml
 pm_to_blib
 .swp$
