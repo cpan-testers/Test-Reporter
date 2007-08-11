@@ -1,7 +1,12 @@
-# $Id: Changes 64 2007-06-27 07:27:32Z afoxson $
+# $Id: Changes 68 2007-06-27 18:11:07Z afoxson $
 # $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/Changes $
 
 Revision history for Perl extension Test::Reporter.
+
+1.29_04  Wed Jun 27 13:20:00 CDT 2007
+    - Added t/0-signature.t to test the SIGNATURE
+    - Renamed t/reporter.t to t/1-reporter.t
+    - Adjusted Makefile.PL to support dist-time signing
 
 1.29_03  Wed Jun 27 02:30:00 CDT 2007
     - We now explicitly specify the license (same terms as perl itself) in the

@@ -7,5 +7,6 @@ MANIFEST
 MANIFEST.SKIP
 README
 SIGNATURE
-t/reporter.t
+t/0-signature.t
+t/1-reporter.t
 META.yml                                 Module meta-data (added by MakeMaker)

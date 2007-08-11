@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-# $Id: reporter.t 59 2007-06-26 20:50:33Z afoxson $
-# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/t/reporter.t $
+# $Id: 1-reporter.t 67 2007-06-27 17:57:42Z afoxson $
+# $HeadURL: https://test-reporter.googlecode.com/svn/branches/1.30/t/1-reporter.t $
 
 use strict;
 use FileHandle;

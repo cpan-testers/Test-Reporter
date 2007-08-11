@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Test-Reporter
-version:             1.29_03
+version:             1.29_04
 abstract:            sends test results to cpan-testers@perl.org
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32
