@@ -1,5 +1,8 @@
 Revision history for Perl extension Test::Reporter.
 
+1.20  Wed Mar 05 04:03:07 2003
+    - fixed a minor bug with read()
+
 1.19  Wed Mar 05 03:03:07 2003
     - added dir() -- specifies default directory to write report files to
     - added write() -- writes a test report to disk

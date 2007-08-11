@@ -1,5 +1,5 @@
-# $Revision: 1.19 $
-# $Id: Reporter.pm,v 1.19 2003/03/05 07:26:35 afoxson Exp $
+# $Revision: 1.20 $
+# $Id: Reporter.pm,v 1.20 2003/03/05 09:15:53 afoxson Exp $
 
 # Test::Reporter - sends test results to cpan-testers@perl.org
 # Copyright (c) 2003 Adam J. Foxson. All rights reserved.
@@ -25,7 +25,7 @@ use vars qw($VERSION $AUTOLOAD $fh $Report $MacMPW $MacApp $dns $domain $send);
 
 $MacMPW    = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
 $MacApp    = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
-($VERSION) = '$Revision: 1.19 $' =~ /\s+(\d+\.\d+)\s+/;
+($VERSION) = '$Revision: 1.20 $' =~ /\s+(\d+\.\d+)\s+/;
 
 local $^W;
 
@@ -37,20 +37,22 @@ sub new {
 	my $type  = shift;
 	my $class = ref($type) || $type;
 	my $self  = {
-		'_mx'             => ['mx1.x.perl.org', 'mx2.x.perl.org'],
-		'_address'        => 'cpan-testers@perl.org',
-		'_grade'          => undef,
-		'_distribution'   => undef,
-		'_report'         => undef,
-		'_subject'        => undef,
-		'_from'           => undef,
-		'_comments'       => '',
-		'_errstr'         => '',
-		'_via'            => '',
-		'_mail_send_args' => '',
-		'_timeout'        => 120,
-		'_debug'          => 0,
-		'_dir'            => '',
+		'_mx'                => ['mx1.x.perl.org', 'mx2.x.perl.org'],
+		'_address'           => 'cpan-testers@perl.org',
+		'_grade'             => undef,
+		'_distribution'      => undef,
+		'_report'            => undef,
+		'_subject'           => undef,
+		'_from'              => undef,
+		'_comments'          => '',
+		'_errstr'            => '',
+		'_via'               => '',
+		'_mail_send_args'    => '',
+		'_timeout'           => 120,
+		'_debug'             => 0,
+		'_dir'               => '',
+		'_subject_lock'      => 0,
+		'_report_lock'       => 0,
 	};
 
 	bless $self, $class;
@@ -123,6 +125,8 @@ sub subject {
 	croak __PACKAGE__, ": subject: grade and distribution must first be set"
 		if not defined $self->{_grade} or not defined $self->{_distribution};
 
+	return $self->{_subject} if $self->{_subject_lock};
+
 	my $subject = uc($self->{_grade}) . ' ' . $self->{_distribution} .
 		" $Config{archname} $Config{osvers}";
 
@@ -132,6 +136,8 @@ sub subject {
 sub report {
 	my $self = shift;
 	warn __PACKAGE__, ": report\n" if $self->debug();
+
+	return $self->{_report} if $self->{_report_lock};
 
 	my $report = qq(
 		This distribution has been tested as part of the cpan-testers
@@ -268,6 +274,8 @@ sub read {
 		$self->{_report} = $report;
 		$self->{_grade} = lc $grade;
 		$self->{_distribution} = $distribution;
+		$self->{_subject_lock} = 1;
+		$self->{_report_lock} = 1;
 	} else {
 		die __PACKAGE__, ": Failed to parse report file '$file'\n";
 	}

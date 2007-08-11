@@ -105,7 +105,7 @@ undef $reporter;
 $reporter = Test::Reporter->new
 (
     grade => 'pass',
-    distribution => 'Test-Reporter-1.19',
+    distribution => 'Test-Reporter-1.20',
 );
 ok(ref $reporter, 'Test::Reporter');
 my $file = $reporter->write();
@@ -118,9 +118,9 @@ $reporter = Test::Reporter->new
 (
 )->read($file);
 ok(ref $reporter, 'Test::Reporter');
-ok($reporter->subject =~ /^PASS Test-Reporter-1.19\s/);
+ok($reporter->subject =~ /^PASS Test-Reporter-1.20\s/);
 ok($reporter->report =~ /This distribution has been tested/);
 ok($reporter->report =~ /Please cc any replies to/);
 ok($reporter->report =~ /Summary of my/);
 ok($reporter->grade, 'pass');
-ok($reporter->distribution, 'Test-Reporter-1.19');
+ok($reporter->distribution, 'Test-Reporter-1.20');
