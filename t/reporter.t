@@ -4,7 +4,7 @@ use strict;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 43 }
+BEGIN { plan tests => 54 }
 
 my $reporter = Test::Reporter->new();
 ok(ref $reporter, 'Test::Reporter');
@@ -79,6 +79,7 @@ $reporter = Test::Reporter->new
 	via => 'something',
 	timeout => 500,
 	debug => 0,
+	dir => '/tmp',
 );
 ok(ref $reporter, 'Test::Reporter');
 ok($reporter->subject =~ /^PASS Bar-1.0\s/);
@@ -95,3 +96,31 @@ ok($reporter->from, 'me@me.com');
 ok($reporter->address, 'foo@bar');
 ok($reporter->debug, 0);
 ok(scalar @{$reporter->mx}, 5);
+ok($reporter->dir, '/tmp');
+
+# ---
+
+undef $reporter;
+
+$reporter = Test::Reporter->new
+(
+    grade => 'pass',
+    distribution => 'Test-Reporter-1.19',
+);
+ok(ref $reporter, 'Test::Reporter');
+my $file = $reporter->write();
+ok($file =~ /Test-Reporter/);
+ok(-e $file);
+
+undef $reporter;
+
+$reporter = Test::Reporter->new
+(
+)->read($file);
+ok(ref $reporter, 'Test::Reporter');
+ok($reporter->subject =~ /^PASS Test-Reporter-1.19\s/);
+ok($reporter->report =~ /This distribution has been tested/);
+ok($reporter->report =~ /Please cc any replies to/);
+ok($reporter->report =~ /Summary of my/);
+ok($reporter->grade, 'pass');
+ok($reporter->distribution, 'Test-Reporter-1.19');

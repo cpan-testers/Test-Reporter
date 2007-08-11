@@ -1,5 +1,5 @@
-# $Revision: 1.16 $
-# $Id: Reporter.pm,v 1.16 2003/02/25 08:45:06 afoxson Exp $
+# $Revision: 1.19 $
+# $Id: Reporter.pm,v 1.19 2003/03/05 07:26:35 afoxson Exp $
 
 # Test::Reporter - sends test results to cpan-testers@perl.org
 # Copyright (c) 2003 Adam J. Foxson. All rights reserved.
@@ -14,6 +14,7 @@
 package Test::Reporter;
 
 use strict;
+use Cwd;
 use Config;
 use Carp;
 use Net::SMTP;
@@ -21,15 +22,16 @@ use File::Temp;
 use Test::Reporter::Mail::Util;
 use Test::Reporter::Date::Format;
 use vars qw($VERSION $AUTOLOAD $fh $Report $MacMPW $MacApp $dns $domain $send);
-use constant FAKE_NO_NET_DNS => 0;    # for debugging only
-use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
-use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
 $MacMPW    = $^O eq 'MacOS' && $MacPerl::Version =~ /MPW/;
 $MacApp    = $^O eq 'MacOS' && $MacPerl::Version =~ /Application/;
-($VERSION) = '$Revision: 1.16 $' =~ /\s+(\d+\.\d+)\s+/;
+($VERSION) = '$Revision: 1.19 $' =~ /\s+(\d+\.\d+)\s+/;
 
 local $^W;
+
+sub FAKE_NO_NET_DNS() {0}    # for debugging only
+sub FAKE_NO_NET_DOMAIN() {0} # for debugging only
+sub FAKE_NO_MAIL_SEND() {0}  # for debugging only
 
 sub new {
 	my $type  = shift;
@@ -48,13 +50,14 @@ sub new {
 		'_mail_send_args' => '',
 		'_timeout'        => 120,
 		'_debug'          => 0,
+		'_dir'            => '',
 	};
 
 	bless $self, $class;
 
 	$self->{_attr} = {   
 		map {$_ => 1} qw(   
-			_address _distribution _comments _errstr _via _timeout _debug
+			_address _distribution _comments _errstr _via _timeout _debug _dir
 		)
 	};
 
@@ -101,7 +104,7 @@ sub _process_params {
 
 	my %params   = @_;
 	my @defaults = qw(
-		mx address grade distribution from comments via timeout debug);
+		mx address grade distribution from comments via timeout debug dir);
 	my %defaults = map {$_ => 1} @defaults;
 
 	for my $param (keys %params) {   
@@ -189,9 +192,9 @@ sub edit_comments {
 	my $comments;
 	{
 		local $/;
-		open FH, $Report or die __PACKAGE__, "Can't open comment file: $!";
+		open FH, $Report or die __PACKAGE__, ": Can't open comment file: $!";
 		$comments = <FH>;
-		close FH or die __PACKAGE__, "Can't close comment file: $!";
+		close FH or die __PACKAGE__, ": Can't close comment file: $!";
 	}
 
 	chomp $comments;
@@ -217,6 +220,59 @@ sub send {
 	else {
 		return $self->_send_smtp(@recipients);
 	}
+}
+
+sub write {
+	my $self = shift;
+	warn __PACKAGE__, ": write\n" if $self->debug();
+
+	my $from = $self->from();
+	my $report = $self->report();
+	my $subject = $self->subject();
+	my $distribution = $self->distribution();
+	my $grade = $self->grade();
+	my $dir = $self->dir() || cwd;
+
+	return unless $self->_verify();
+
+	$distribution =~ s/[^A-Za-z0-9\.\-]+//g;
+
+	my $file = "$dir/$grade.$distribution.$Config{archname}.$Config{osvers}.${\(time)}.$$.rpt";
+
+	open REPORT, ">$file" or die __PACKAGE__, ": Can't open report file: $!";
+	print REPORT "From: $from\n";
+	print REPORT "Subject: $subject\n";
+	print REPORT "Report: $report";
+	close REPORT or die __PACKAGE__, ": Can't close report file: $!";
+
+	return $file;
+}
+
+sub read {
+	my ($self, $file) = @_;
+	warn __PACKAGE__, ": read\n" if $self->debug();
+
+	my $buffer;
+
+	{
+		local $/;
+		open REPORT, $file or die __PACKAGE__, ": Can't open report file: $!";
+		$buffer = <REPORT>;
+		close REPORT or die __PACKAGE__, ": Can't close report file: $!";
+	}
+
+	if (my ($from, $subject, $report) = $buffer =~ /^From:\s(.+)Subject:\s(.+)Report:\s(.+)$/s) {
+		my ($grade, $distribution) = (split /\s/, $subject)[0,1];
+		$self->from($from) unless $self->from();
+		$self->{_subject} = $subject;
+		$self->{_report} = $report;
+		$self->{_grade} = lc $grade;
+		$self->{_distribution} = $distribution;
+	} else {
+		die __PACKAGE__, ": Failed to parse report file '$file'\n";
+	}
+
+	return $self;
 }
 
 sub _verify {
@@ -460,12 +516,12 @@ sub _start_editor_mac {
 
 	use vars '%Application';
 	for my $mod (qw(Mac::MoreFiles Mac::AppleEvents::Simple Mac::AppleEvents)) {
-		eval qq(require $mod) or die "die: Can't load $mod.\n";
+		eval qq(require $mod) or die __PACKAGE__, ": Can't load $mod.\n";
 		eval qq($mod->import());
 	}
 
 	my $app = $Application{$editor};
-	die "Application with ID '$editor' not found.\n" if !$app;
+	die __PACKAGE__, ": Application with ID '$editor' not found.\n" if !$app;
 
 	my $obj = 'obj {want:type(cobj), from:null(), ' .
 		'form:enum(name), seld:TEXT(@)}';
@@ -473,7 +529,7 @@ sub _start_editor_mac {
 		"'----': $obj, usin: $obj", $Report, $app);
 
 	if (my $err = AEGetParamDesc($evt->{REP}, 'errn')) {
-		die "AppleEvent error: ${\AEPrint($err)}.\n";
+		die __PACKAGE__, ": AppleEvent error: ${\AEPrint($err)}.\n";
 	}
 
 	$self->_prompt('Done?', 'Yes') if $MacMPW;
@@ -496,9 +552,9 @@ sub _start_editor {
 		$self->_start_editor_mac($editor);
 	}
 	else {
-		die "The editor `$editor' could not be run" if system "$editor $Report";
-		die "Report has disappeared; terminated" unless -e $Report;
-		die "Empty report; terminated" unless -s $Report > 2;
+		die __PACKAGE__, ": The editor `$editor' could not be run" if system "$editor $Report";
+		die __PACKAGE__, ": Report has disappeared; terminated" unless -e $Report;
+		die __PACKAGE__, ": Empty report; terminated" unless -s $Report > 2;
 	}
 }
 

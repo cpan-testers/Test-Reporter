@@ -1,5 +1,14 @@
 Revision history for Perl extension Test::Reporter.
 
+1.19  Wed Mar 05 03:03:07 2003
+    - added dir() -- specifies default directory to write report files to
+    - added write() -- writes a test report to disk
+    - added read() -- reads a test report from disk
+    - These three methods are used in situations where you test on a machine
+      that has port 25 blocked and there is no local MTA. You use write() on
+      the machine that you are testing from, and use read() on the machine
+      that you want to actually submit the reports from
+
 1.16  Tue Feb 25 04:00:00 2003
     - abstract now matches PAUSE meta-data for this distribution
     - better POD documentation
@@ -22,7 +31,7 @@ Revision history for Perl extension Test::Reporter.
     - we now use Mail::Send to send reports, if it's available
     - now cycles through all available MX servers, when using Net::SMTP
     - added bin/cpantest
-	- T::R now allows testers to edit the report interactively via the
+    - T::R now allows testers to edit the report interactively via the
       edit_comments() method
     - T::R report's have been made less susceptible to being marked as spam
     - "can't call method "mail" on an undefined value" bug fixed

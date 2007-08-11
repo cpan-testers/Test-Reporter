@@ -14,6 +14,7 @@ DEPENDENCIES (see the POD/README for details on the optional modules)
 
 Net::SMTP (mandatory)
 File::Temp (mandatory)
+File::Spec (mandatory)
 Net::Domain (optional)
 Net::DNS (optional)
 Mail::Send (optional)

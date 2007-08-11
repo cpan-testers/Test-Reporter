@@ -40,8 +40,7 @@ Test::Reporter - sends test results to cpan-testers@perl.org
 Test::Reporter reports the test results of any given distribution to the
 CPAN testing service. See B<http://testers.cpan.org/> for details.
 
-Test::Reporter goes to extreme lengths to be compatible with any version
-of perl since 5.005 and most all platforms.
+Test::Reporter has wide support for various perl5's and platforms.
 
 =head1 METHODS
 
@@ -51,7 +50,7 @@ of perl since 5.005 and most all platforms.
 
 This constructor returns a Test::Reporter object. It will optionally accept
 named parameters for: mx, address, grade, distribution, from, comments,
-via, timeout, and debug.
+via, timeout, debug and dir.
 
 =item * B<subject>
 
@@ -153,7 +152,7 @@ known at the time of release for perl.org. If you do not have
 Mail::Send installed (thus using the Net::SMTP interface) and do have
 Net::DNS installed it will dynamically retrieve the latest MX's. You
 really shouldn't need to use this unless the hardcoded MX's have
-become wrong and you don't have Net::DNS installed
+become wrong and you don't have Net::DNS installed.
 
 =item * B<mail_send_args>
 
@@ -161,6 +160,36 @@ Optional. If you have MailTools installed and you want to have it
 behave in a non-default manner, parameters that you give this
 method will be passed directly to the constructor of
 Mail::Mailer. See L<Mail::Mailer> and L<Mail::Send> for details. 
+
+=item * B<dir>
+
+Optional. Defaults to the current working directory. This method specifies
+the directory that write() writes test report files to.
+
+=item * B<write and read>
+
+These methods are used in situations where you test on a machine that has
+port 25 blocked and there is no local MTA. You use write() on the machine
+that you are testing from, transfer the written test reports from the
+testing machine to the sending machine, and use read() on the machine that
+you actually want to submit the reports from. write() will write a file in
+an internal format that contains 'From', 'Subject', and the content of the
+report. The filename will be represented as:
+grade.distribution.archname.osvers.seconds_since_epoch.pid.rpt. write()
+uses the value of dir() if it was specified, else the cwd.
+
+On the machine you are testing from:
+
+  my $reporter = Test::Reporter->new
+  (
+    grade => 'pass',
+    distribution => 'Test-Reporter-1.16',
+  )->write();
+
+On the machine you are submitting from:
+
+  my $reporter;
+  $reporter = Test::Reporter->new()->read('pass.Test-Reporter-1.16.i686-linux.2.2.16.1046685296.14961.rpt')->send() || die $reporter->errstr(); # wrap in an opendir if you've a lot to submit
 
 =back
 
@@ -171,12 +200,10 @@ Mail::Send installed) be sure that you use the author's @cpan.org address
 otherwise they may not be delivered, since the perl.org MX's are unlikely
 to relay for anything other than perl.org and cpan.org.
 
-The internal bundling scheme may be changed in the future.
-
 =head1 BUGS
 
-If you happen to find one please report it to the below URL. Alternatively,
-you can mail me at afoxson@pobox.com :-)
+If you happen to find one please email me at afoxson@pobox.com, and/or report
+it to the below URL. Thank you.
 
   http://rt.cpan.org/NoAuth/Bugs.html?Dist=Test-Reporter
 
@@ -198,6 +225,10 @@ and/or modify it under the same terms as Perl itself.
 =item * L<Config>
 
 =item * L<Net::SMTP>
+
+=item * L<File::Spec>
+
+=item * L<File::Temp>
 
 =item * L<Net::Domain>
 

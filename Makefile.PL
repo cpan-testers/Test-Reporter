@@ -1,10 +1,5 @@
-# $Id: Makefile.PL,v 1.11 2003/02/25 08:45:04 afoxson Exp $
-# $Revision: 1.11 $
-
-# As configured, this distribution should be compatible, out-of-the box under
-# all perl's since 5.00307. However, File::Spec is required, if you are
-# running a perl < 5.005. File::Spec is a dependency of Errno, which is a
-# dependency of File::Temp, which is a dependency of Test::Reporter.
+# $Id: Makefile.PL,v 1.12 2003/03/05 05:41:17 afoxson Exp $
+# $Revision: 1.12 $
 
 use ExtUtils::MakeMaker;
 
@@ -23,6 +18,7 @@ WriteMakefile(
 	'PREREQ_PM' => {
 		'Net::SMTP' => 0,
 		'File::Temp' => 0,
+		'File::Spec' => 0,
 	},
 	'VERSION_FROM' => 'lib/Test/Reporter.pm',
 	'MAN3PODS' => {
