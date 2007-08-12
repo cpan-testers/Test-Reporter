@@ -834,6 +834,10 @@ CPAN Testers reports (old site)
 
 The new CPAN Testers Wiki (thanks Barbie!)
 
+=item * L<http://lists.cpan.org/showlist.cgi?name=cpan-testers>
+
+The cpan-testers mailing list
+
 =back
 
 Test::Reporter itself--as a project--also has several links for your visiting
