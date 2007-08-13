@@ -261,7 +261,7 @@ sub send {
 
     my $transport = $self->transport();
 
-    if ($transport eq 'Mail::Send') {
+    if ($transport eq 'Mail::Send' && $self->_have_mail_send()) {
         return $self->_mail_send(@recipients);
     }
     elsif ($transport eq 'Net::SMTP') {
