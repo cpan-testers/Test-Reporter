@@ -20,6 +20,7 @@ use Test::Reporter;
 use vars qw(
     $VERSION $Grade $Package $No_comment $Automatic $Comment_text $Comment_file
     %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump $Perl_version
+    $Transport
 );
 
 $VERSION       = '1.34';
@@ -34,6 +35,7 @@ $Reporter      = Test::Reporter->new();
 
 &get_opts();
 &check_opts();
+&set_transport() if $Transport;
 &get_comment_file() if $Comment_file;
 &set_comment() if not $No_comment;
 &start_editor() unless ($No_comment || ($Comment_text and !$Comment_file));
@@ -60,6 +62,7 @@ sub usage {
     print "           [ -t text | -f file ] [ -from user\@example.com ]\n";
     print "           [ -perl-version path_to_perl ]\n";
     print "           [ -dump | email-addresses ]\n";
+    print "           [ -x transport ]\n";
     print "  -g grade  Indicates the status of the tested package.\n";
     print "            Possible values for grade are:\n";
 
@@ -77,6 +80,7 @@ sub usage {
     print "  -auto         Autosubmission (non-interactive); implies -nc.\n";
     print "  -dump         Print the report instead of emailing it.\n";
     print "  -perl-version Specify an alternate perl under which the distribution was tested.\n";
+    print "  -x            Specify a transport: Net::SMTP or Mail::Send.\n";
 
     exit 1;
 }
@@ -92,11 +96,16 @@ sub get_opts {
         'from=s',  \$From,
         'dump', \$Dump,
         'perl-version=s', \$Perl_version,
+        'x=s',  \$Transport,
     ) or usage();
 
     $CC         = join ' ', @ARGV;
     $No_comment = 1 if ($Automatic && !$Comment_text && !$Comment_file);
     $Reporter->from($From) if $From;
+}
+
+sub set_transport {
+    $Reporter->transport($Transport);
 }
 
 sub check_opts {
@@ -272,6 +281,7 @@ cpan-testers project.  See B<http://testers.cpan.org/> for details.
 
     cpantest -g grade [ -nc ] [ -auto ] [ -p package ]
              [ -t text | -f file ] [ email-addresses ]
+             [ -x transport ]
 
 =head1 OPTIONS
 
@@ -325,6 +335,12 @@ report (typically, the package's author).
 An alternate version of perl on which the distribution was tested.
 This option allows reporting on versions of perl for which Test::Reporter
 is not installed.
+
+=item -x transport
+
+Specify a transport: Net::SMTP or Mail::Send. This is optional. One will be
+chosen for you automatically if not specified. See Test::Reporter docs for
+further information.
 
 =back
 
