@@ -1,5 +1,5 @@
 # Test::Reporter - sends test results to cpan-testers@perl.org
-# Copyright (c) 2003 Adam J. Foxson. All rights reserved.
+# Copyright (c) 2007 Adam J. Foxson. All rights reserved.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
@@ -24,7 +24,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.32';
+$VERSION = '1.34';
 
 local $^W = 1;
 
@@ -53,6 +53,7 @@ sub new {
             '_osvers'   => $Config{osvers},
             '_myconfig' => Config::myconfig(),
         },
+        '_transport'         => '',
     };
 
     bless $self, $class;
@@ -106,7 +107,7 @@ sub _process_params {
 
     my %params   = @_;
     my @defaults = qw(
-        mx address grade distribution from comments via timeout debug dir perl_version);
+        mx address grade distribution from comments via timeout debug dir perl_version transport);
     my %defaults = map {$_ => 1} @defaults;
 
     for my $param (keys %params) {   
@@ -180,6 +181,32 @@ sub grade {
     return $self->{_grade} = $grade;
 }
 
+sub transport {
+    my $self = shift;
+    warn __PACKAGE__, ": transport\n" if $self->debug();
+
+    my %transports    = (
+        # support for plugin transports will eventually be added, but not today
+        'Net::SMTP' => 'Builtin transport using Net::SMTP',
+        'Mail::Send' => 'Builtin transport using Mail::Send',
+    );
+
+    return $self->{_transport} unless scalar @_;
+
+    my $transport = shift;
+
+    croak __PACKAGE__, ":transport: '$transport' is invalid, choose from: " .
+        join ' ', keys %transports unless $transports{$transport};
+
+    my $args = shift;
+
+    if ($transport eq 'Mail::Send' && defined $args && ref $args eq 'ARRAY') {
+        $self->mail_send_args($args);
+    }
+
+    return $self->{_transport} = $transport;
+}
+
 sub edit_comments {
     my($self, %args) = @_;
     warn __PACKAGE__, ": edit_comments\n" if $self->debug();
@@ -232,12 +259,22 @@ sub send {
         return;
     }
 
-    # Addresses #9831: Usage of Mail::Mailer is broken on Win32
-    if ($^O !~ /^(?:cygwin|MSWin32)$/ && $self->_have_mail_send()) {
+    my $transport = $self->transport();
+
+    if ($transport eq 'Mail::Send') {
         return $self->_mail_send(@recipients);
     }
-    else {
+    elsif ($transport eq 'Net::SMTP') {
         return $self->_send_smtp(@recipients);
+    }
+    else {
+        # Addresses #9831: Usage of Mail::Mailer is broken on Win32
+        if ($^O !~ /^(?:cygwin|MSWin32)$/ && $self->_have_mail_send()) {
+            return $self->_mail_send(@recipients);
+        }
+        else {
+            return $self->_send_smtp(@recipients);
+        }
     }
 }
 
@@ -985,7 +1022,7 @@ become wrong and you don't have Net::DNS installed.
 
 This constructor returns a Test::Reporter object. It will optionally accept
 named parameters for: mx, address, grade, distribution, from, comments,
-via, timeout, debug and dir.
+via, timeout, debug, dir, perl_version, and transport.
 
 =item * B<perl_version>
 
@@ -1021,6 +1058,25 @@ first be specified before calling this method.
 
 Optional. Gets or sets the timeout value for the submission of test
 reports. Default is 120 seconds. 
+
+=item * B<transport>
+
+Optional. Gets or sets the transport method. If you do not specify a transport,
+one will be selected automatically on your behalf: If you're on Windows,
+Net::SMTP will be selected, if you're not on Windows, Net::SMTP will be
+selected unless Mail::Send is installed, in which case Mail::Send is used.
+
+At the moment, this must be one of either 'Net::SMTP', or 'Mail::Send'.
+Support for authenticated SMTP may soon be possibly added as well.
+
+If you specify 'Mail::Send' as a transport, you can add an additional
+argument in the form of an array reference which will be passed to the
+constructor of the lower-level Mail::Mailer. This can be used to great
+effect for all manner of fun and enjoyment. ;-)
+
+This is not designed to be an extensible platform upon which to build
+transport plugins. That functionality is planned for the next-generation
+release of Test::Reporter, which will reside in the CPAN::Testers namespace.
 
 =item * B<via>
 

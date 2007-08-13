@@ -5,7 +5,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 117 }
+BEGIN { plan tests => 129 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -223,3 +223,32 @@ ok(not $reporter->_is_a_perl_release('Perl-Visualize-1.02'));
 ok($reporter->message_id =~ /^<\d+\.[^.]+\.\d+@[^>]+>$/);
 
 ok($reporter->_format_date() =~ /^\w{3},\s\d{1,2}\s\w{3}\s\d{4}\s\d{2}:\d{2}:\d{2}\s[-+]\d{4}$/);
+
+undef $reporter;
+
+$reporter = Test::Reporter->new();
+
+ok($reporter->transport() eq '');
+ok($reporter->{_transport} eq '');
+ok($reporter->transport('Mail::Send') eq 'Mail::Send');
+ok($reporter->{_transport} eq 'Mail::Send');
+ok($reporter->transport('Net::SMTP') eq 'Net::SMTP');
+ok($reporter->{_transport} eq 'Net::SMTP');
+
+eval { $reporter->transport('Invalid::Transport'); };
+ok($@ =~ q{is invalid, choose from});
+
+{
+    local $Test::Reporter::Send = 1;
+    my @xport_args = ('foo', 'bar', 'baz', 'wibble', 'plink!');
+    my $xport_args = \@xport_args;
+    ok($reporter->transport('Mail::Send', $xport_args) eq 'Mail::Send');
+    ok($reporter->{_mail_send_args} eq $xport_args);
+}
+
+undef $reporter;
+
+$reporter = Test::Reporter->new(transport => 'Net::SMTP');
+ok(ref $reporter eq 'Test::Reporter');
+ok($reporter->transport eq 'Net::SMTP');
+ok($reporter->{_transport} eq 'Net::SMTP');

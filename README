@@ -163,7 +163,7 @@ METHODS
     * new
         This constructor returns a Test::Reporter object. It will optionally
         accept named parameters for: mx, address, grade, distribution, from,
-        comments, via, timeout, debug and dir.
+        comments, via, timeout, debug, dir, perl_version, and transport.
 
     * perl_version
         Returns a hashref containing _archname, _osvers, and _myconfig based
@@ -195,6 +195,27 @@ METHODS
     * timeout
         Optional. Gets or sets the timeout value for the submission of test
         reports. Default is 120 seconds.
+
+    * transport
+        Optional. Gets or sets the transport method. If you do not specify a
+        transport, one will be selected automatically on your behalf: If
+        you're on Windows, Net::SMTP will be selected, if you're not on
+        Windows, Net::SMTP will be selected unless Mail::Send is installed,
+        in which case Mail::Send is used.
+
+        At the moment, this must be one of either 'Net::SMTP', or
+        'Mail::Send'. Support for authenticated SMTP may soon be possibly
+        added as well.
+
+        If you specify 'Mail::Send' as a transport, you can add an
+        additional argument in the form of an array reference which will be
+        passed to the constructor of the lower-level Mail::Mailer. This can
+        be used to great effect for all manner of fun and enjoyment. ;-)
+
+        This is not designed to be an extensible platform upon which to
+        build transport plugins. That functionality is planned for the
+        next-generation release of Test::Reporter, which will reside in the
+        CPAN::Testers namespace.
 
     * via
         Optional. Gets or sets the value that will be appended to

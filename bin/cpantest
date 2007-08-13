@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # cpantest - sends test results to cpan-testers@perl.org
-# Copyright (c) 2003 Adam J. Foxson. All rights reserved.
+# Copyright (c) 2007 Adam J. Foxson. All rights reserved.
 # Copyright (c) 2002 Autrijus Tang. All rights reserved.
 # Copyright (c) 1999 Kurt Starsinic. All rights reserved.
 
@@ -22,7 +22,7 @@ use vars qw(
     %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump $Perl_version
 );
 
-$VERSION       = '1.32';
+$VERSION       = '1.34';
 ($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
 $Reporter      = Test::Reporter->new();
 %Grades        = (
@@ -339,7 +339,7 @@ from the CPAN Testers E<lt>F<cpan-testers@perl.org>E<gt>.
 
 =head1 COPYRIGHT
 
-    Copyright (c) 2003 Adam J. Foxson. All rights reserved. 
+    Copyright (c) 2007 Adam J. Foxson. All rights reserved. 
     Copyright (c) 2002 Autrijus Tang. All rights reserved.
     Copyright (c) 1999 Kurt Starsinic. All rights reserved.
 

@@ -1,4 +1,14 @@
-Revision history for Perl extension Test::Reporter.
+Revision history for Perl extension Test::Reporter. For canonical change info,
+visit the master repository at: http://repo.or.cz/w/test-reporter.git
+
+1.34    Sun Aug 12 23:00:00 EDT 2007
+        - It is now possible to override the automatic selection of a
+          transport by making use of the transport() method (per WYANT and
+          ANDK)
+        - A dozen new tests added to support transport()
+        - Internal debugging improvements
+        - Various documentation improvements
+        - Removing subversion artifacts; This project is now under git control
 
 1.32    Sun Jul 29 06:30:00 EDT 2007
         - Fixed an issue (8@Google) whereby test reports had Date headers that
