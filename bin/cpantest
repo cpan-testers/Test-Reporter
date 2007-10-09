@@ -47,7 +47,8 @@ $Reporter      = Test::Reporter->new();
 
 if ($Dump) {
     my $fh; open($fh, '>-') or die "Can't open STDOUT: $!";
-    print $Reporter->write($fh);
+    $Reporter->write($fh);
+    print $fh "\n";
 } else {
     &confirm_send() if not $Automatic;
     &send();
