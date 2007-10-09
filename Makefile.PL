@@ -26,5 +26,5 @@ WriteMakefile(
     'clean' => {
         'FILES' => '*.rpt',
     },
-    LICENSE => 'perl',
+    ($ExtUtils::MakeMaker::VERSION >= 6.31 ? (LICENSE  => 'perl') : ()),
 );

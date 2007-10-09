@@ -149,7 +149,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
     ok( $reporter->perl_version->{_osvers} eq 'new_osvers');
     ok( $reporter->perl_version->{_myconfig} eq "new_myconfig\n(several lines)");
 
-    unlink $alt_perl;
+    1 while (unlink $alt_perl);
 }
 
 # testing error
@@ -162,7 +162,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
 
     eval { $reporter->perl_version( "$^X $alt_perl"); };
     ok($@=~ q{^Test::Reporter: cannot get perl version info from});
-    unlink $alt_perl;
+    1 while (unlink $alt_perl);
 }
 
 ok($reporter->_is_a_perl_release('perl-5.9.3'));

@@ -269,7 +269,7 @@ sub send {
     }
     else {
         # Addresses #9831: Usage of Mail::Mailer is broken on Win32
-        if ($^O !~ /^(?:cygwin|MSWin32)$/ && $self->_have_mail_send()) {
+        if ($^O !~ /^(?:cygwin|MSWin32|VMS)$/ && $self->_have_mail_send()) {
             return $self->_mail_send(@recipients);
         }
         else {
@@ -294,7 +294,20 @@ sub write {
     $distribution =~ s/[^A-Za-z0-9\.\-]+//g;
 
     my($fh, $file); unless ($fh = $_[0]) {
-        $file = "$dir/$grade.$distribution.$self->{_perl_version}->{_archname}.$self->{_perl_version}->{_osvers}.${\(time)}.$$.rpt";
+        $file = "$grade.$distribution.$self->{_perl_version}->{_archname}.$self->{_perl_version}->{_osvers}.${\(time)}.$$.rpt";
+
+        if ($^O eq 'VMS') {
+            $file = "$grade.$distribution.$self->{_perl_version}->{_archname}";
+            my $ext = "$self->{_perl_version}->{_osvers}.${\(time)}.$$.rpt";
+            # only 1 period in filename
+            # we also only have 39.39 for filename
+            $file =~ s/\./_/g;
+            $ext  =~ s/\./_/g;
+            $file = $file . '.' . $ext;
+        }
+
+        $file = File::Spec->catfile($dir, $file);
+
         warn $file if $self->debug();
         $fh = FileHandle->new();
         open $fh, ">$file" or die __PACKAGE__, ": Can't open report file '$file': $!";

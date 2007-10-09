@@ -4,6 +4,7 @@ visit the master repository at: http://repo.or.cz/w/test-reporter.git
 1.36    Mon Oct 08 21:00:00 EDT 2007
         - Compat for perl-5.005_05 per David Golden and Slaven Rezic
         - Per 29690@RT cleaning up cpantest's -dump output (thanks janus!)
+        - Per 9@Google compat fixes for VMS courtesy of Peter (Stig) Edwards
 
 1.34    Sun Aug 12 23:00:00 EDT 2007
         - It is now possible to override the automatic selection of a
