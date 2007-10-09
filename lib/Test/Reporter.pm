@@ -867,8 +867,8 @@ Test::Reporter - sends test results to cpan-testers@perl.org
 =head1 DESCRIPTION
 
 Test::Reporter reports the test results of any given distribution to the CPAN
-testing service. Test::Reporter has wide support for various perl5's and
-platforms. For further information visit the below links:
+Testers. Test::Reporter has wide support for various perl5's and platforms. For
+further information visit the below links:
 
 =over 4
 

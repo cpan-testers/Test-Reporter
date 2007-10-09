@@ -33,8 +33,8 @@ SYNOPSIS
 
 DESCRIPTION
     Test::Reporter reports the test results of any given distribution to the
-    CPAN testing service. Test::Reporter has wide support for various
-    perl5's and platforms. For further information visit the below links:
+    CPAN Testers. Test::Reporter has wide support for various perl5's and
+    platforms. For further information visit the below links:
 
     * <http://cpantesters.perl.org/>
         CPAN Testers reports (new site)
