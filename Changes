@@ -1,6 +1,9 @@
 Revision history for Perl extension Test::Reporter. For canonical change info,
 visit the master repository at: http://repo.or.cz/w/test-reporter.git
 
+1.36    Mon Oct 08 21:00:00 EDT 2007
+        - Compat for perl-5.005_05 per David Golden and Slaven Rezic
+
 1.34    Sun Aug 12 23:00:00 EDT 2007
         - It is now possible to override the automatic selection of a
           transport by making use of the transport() method (per WYANT and
