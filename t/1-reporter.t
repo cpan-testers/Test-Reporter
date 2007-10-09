@@ -139,7 +139,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
 # create fake perl
 {
     my $fh = FileHandle->new();
-    open( $fh, '>', $alt_perl) or die "cannot create (fake) $alt_perl: $!";
+    open( $fh, ">$alt_perl") or die "cannot create (fake) $alt_perl: $!";
     # fake perl, still needs to grab the magick number!
     print {$fh} qq{(\$m= join( '', \@ARGV))=~ s{\\D}{}g; print "\$m\nnew_archname\nnew_osvers\nnew_myconfig\n(several lines)"; };
     close $fh;
@@ -155,7 +155,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
 # testing error
 {
     my $fh = FileHandle->new();
-    open( $fh, '>', $alt_perl) or die "cannot create (fake, not working) $alt_perl: $!";
+    open( $fh, ">$alt_perl") or die "cannot create (fake, not working) $alt_perl: $!";
     # fake perl, gives wrong output
     print {$fh} qq{print "booh"; };
     close $fh;
