@@ -1,6 +1,10 @@
 Revision history for Perl extension Test::Reporter. For canonical change info,
 visit the master repository at: http://repo.or.cz/w/test-reporter.git
 
+1.38    Tue Oct 09 21:00:00 EDT 2007
+        - Additional compatibility improvements for VMS.
+          Many thanks to Peter (Stig) Edwards!
+
 1.36    Mon Oct 08 21:00:00 EDT 2007
         - Compat for perl-5.005_05 per David Golden and Slaven Rezic
         - Per 29690@RT cleaning up cpantest's -dump output (thanks janus!)
