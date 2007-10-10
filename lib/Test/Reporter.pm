@@ -566,7 +566,12 @@ sub perl_version  {
         my $perl = shift;
         my $q = ( ($^O eq "MSWin32") || ($^O eq 'VMS') ) ? '"' : "'"; # quote for command-line perl
         my $magick = int(rand(1000));                                 # just to check that we get a valid result back
-        my $conf = `$perl -MConfig -e$q print qq{$magick\n\$Config{archname}\n\$Config{osvers}\n},Config::myconfig();$q`;
+        my $cmd  = "$perl -MConfig -e$q print qq{$magick\n\$Config{archname}\n\$Config{osvers}\n},Config::myconfig();$q";
+        if($^O eq 'VMS'){
+            my $sh = $Config{'sh'};
+            $cmd  = "$sh $perl $q-MConfig$q -e$q print qq{$magick\\n\$Config{archname}\\n\$Config{osvers}\\n},Config::myconfig();$q";
+        }
+        my $conf = `$cmd`;
         my %conf;
         ( @conf{ qw( magick _archname _osvers _myconfig) } ) = split( /\n/, $conf, 4);
         croak __PACKAGE__, ": cannot get perl version info from $perl: $conf" if( $conf{magick} ne $magick);

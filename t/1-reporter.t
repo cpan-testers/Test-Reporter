@@ -147,7 +147,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
     my $alt_perl_version = $reporter->perl_version("$^X $alt_perl");
     ok( $reporter->perl_version->{_archname} eq 'new_archname');
     ok( $reporter->perl_version->{_osvers} eq 'new_osvers');
-    ok( $reporter->perl_version->{_myconfig} eq "new_myconfig\n(several lines)");
+    ok( $reporter->perl_version->{_myconfig} =~ m/^new_myconfig\n\(several lines\)/s); # VMS has trailing CRLF
 
     1 while (unlink $alt_perl);
 }
