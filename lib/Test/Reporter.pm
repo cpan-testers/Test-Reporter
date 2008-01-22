@@ -188,6 +188,7 @@ sub transport {
     my %transports    = (
         # support for plugin transports will eventually be added, but not today
         'Net::SMTP' => 'Builtin transport using Net::SMTP',
+        'Net::SMTP::TLS' => 'Builtin transport using Net::SMTP::TLS',
         'Mail::Send' => 'Builtin transport using Mail::Send',
     );
 
@@ -202,6 +203,16 @@ sub transport {
 
     if ($transport eq 'Mail::Send' && defined $args && ref $args eq 'ARRAY') {
         $self->mail_send_args($args);
+    }
+    elsif ($transport eq 'Net::SMTP::TLS') {
+        if (   ref $args ne 'HASH' || 
+             ! exists $args->{Username} || 
+             ! exists $args->{Password} 
+        ) {
+            croak __PACKAGE__, ":transport: '$transport' requires hash ref" .
+                               "with Username and Password parameters";
+        }
+        $self->{_tls} = { %$args };
     }
 
     return $self->{_transport} = $transport;

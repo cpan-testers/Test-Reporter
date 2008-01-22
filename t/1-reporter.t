@@ -5,7 +5,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 129 }
+BEGIN { plan tests => 133 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -234,6 +234,19 @@ ok($reporter->transport('Mail::Send') eq 'Mail::Send');
 ok($reporter->{_transport} eq 'Mail::Send');
 ok($reporter->transport('Net::SMTP') eq 'Net::SMTP');
 ok($reporter->{_transport} eq 'Net::SMTP');
+
+# Net::SMTP::Transport requires hash ref with Username and Password
+eval { $reporter->transport('Net::SMTP::TLS') };
+ok($@ =~ q{Username and Password} );
+
+# Arguments stored in _tls
+$reporter->transport('Net::SMTP::TLS', {
+    Username => 'LarryW', Password => 'JAPH'
+});
+ok($reporter->{_transport} eq 'Net::SMTP::TLS');
+ok( ref $reporter->{_tls} eq 'HASH' );
+ok( $reporter->{_tls}{Username} eq 'LarryW' );
+ok( $reporter->{_tls}{Password} eq 'JAPH' );
 
 eval { $reporter->transport('Invalid::Transport'); };
 ok($@ =~ q{is invalid, choose from});
