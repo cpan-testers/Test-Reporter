@@ -144,8 +144,6 @@ sub report {
     $report .= "This distribution has been tested as part of the cpan-testers\n";
     $report .= "effort to test as many new uploads to CPAN as possible.  See\n";
     $report .= "http://testers.cpan.org/\n\n";
-    $report .= "Please cc any replies to cpan-testers\@perl.org to keep other\n";
-    $report .= "test volunteers informed and to prevent any duplicate effort.\n";
 
     if (not $self->{_comments}) {
         $report .= "\n\n--\n\n";

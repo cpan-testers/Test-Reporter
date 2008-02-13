@@ -5,7 +5,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 129 }
+BEGIN { plan tests => 125 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -17,7 +17,6 @@ $reporter->distribution('Mail-Freshmeat-1.20');
 
 ok($reporter->subject =~ /^PASS Mail-Freshmeat-1.20\s/);
 ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Please cc any replies to/);
 ok($reporter->report =~ /Summary of my/);
 ok($reporter->grade, 'pass');
 ok($reporter->distribution, 'Mail-Freshmeat-1.20');
@@ -39,7 +38,6 @@ $reporter->mx([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
 ok($reporter->subject =~ /^FAIL Foo-Bar-1.50\s/);
 ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Please cc any replies to/);
 ok($reporter->report =~ /Summary of my/);
 ok($reporter->report =~ /blah/);
 ok($reporter->grade, 'fail');
@@ -87,7 +85,6 @@ $reporter = Test::Reporter->new
 ok(ref $reporter, 'Test::Reporter');
 ok($reporter->subject =~ /^PASS Bar-1.0\s/);
 ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Please cc any replies to/);
 ok($reporter->report =~ /Summary of my/);
 ok($reporter->report =~ /woo/);
 ok($reporter->grade, 'pass');
@@ -123,7 +120,6 @@ $reporter = Test::Reporter->new
 ok(ref $reporter, 'Test::Reporter');
 ok($reporter->subject =~ /^PASS $distro\s/);
 ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Please cc any replies to/);
 ok($reporter->report =~ /Summary of my/);
 ok($reporter->grade, 'pass');
 ok($reporter->distribution, $distro);
