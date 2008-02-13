@@ -42,7 +42,6 @@ sub new {
         '_comments'          => '',
         '_errstr'            => '',
         '_via'               => '',
-        '_mail_send_args'    => '',
         '_timeout'           => 120,
         '_debug'             => 0,
         '_dir'               => '',
@@ -54,6 +53,8 @@ sub new {
             '_myconfig' => Config::myconfig(),
         },
         '_transport'         => '',
+        '_transport_args'    => [],
+        '_mail_send_args'    => '', # deprecated -> use _transport_args
     };
 
     bless $self, $class;
@@ -107,14 +108,16 @@ sub _process_params {
 
     my %params   = @_;
     my @defaults = qw(
-        mx address grade distribution from comments via timeout debug dir perl_version transport);
+        mx address grade distribution from comments via timeout debug dir perl_version transport transport_args);
     my %defaults = map {$_ => 1} @defaults;
 
     for my $param (keys %params) {   
         croak __PACKAGE__, ": new: parameter '$param' is invalid." unless
             exists $defaults{$param};
     }
-
+    
+    # XXX need to process transport_args directly rather than through 
+    # the following -- store array ref directly
     for my $param (keys %params) {   
         $self->$param($params{$param});
     }
@@ -144,8 +147,6 @@ sub report {
     $report .= "This distribution has been tested as part of the cpan-testers\n";
     $report .= "effort to test as many new uploads to CPAN as possible.  See\n";
     $report .= "http://testers.cpan.org/\n\n";
-    $report .= "Please cc any replies to cpan-testers\@perl.org to keep other\n";
-    $report .= "test volunteers informed and to prevent any duplicate effort.\n";
 
     if (not $self->{_comments}) {
         $report .= "\n\n--\n\n";
@@ -199,20 +200,14 @@ sub transport {
     croak __PACKAGE__, ":transport: '$transport' is invalid, choose from: " .
         join ' ', keys %transports unless $transports{$transport};
 
-    my $args = shift;
+    my @args = @_;
 
-    if ($transport eq 'Mail::Send' && defined $args && ref $args eq 'ARRAY') {
-        $self->mail_send_args($args);
+    if ( @args && $transport eq 'Mail::Send' && ref $args[0] eq 'ARRAY' ) {
+        # treat as old form of Mail::Send arguments and convert to list
+        $self->transport_args(@{$args[0]});
     }
-    elsif ($transport eq 'Net::SMTP::TLS') {
-        if (   ref $args ne 'HASH' || 
-             ! exists $args->{Username} || 
-             ! exists $args->{Password} 
-        ) {
-            croak __PACKAGE__, ":transport: '$transport' requires hash ref" .
-                               "with Username and Password parameters";
-        }
-        $self->{_tls} = { %$args };
+    elsif ( @args ) {
+        $self->transport_args(@args);
     }
 
     return $self->{_transport} = $transport;
@@ -275,7 +270,7 @@ sub send {
     if ($transport eq 'Mail::Send' && $self->_have_mail_send()) {
         return $self->_mail_send(@recipients);
     }
-    elsif ($transport eq 'Net::SMTP') {
+    elsif ($transport =~ /^Net::SMTP/ ) {
         return $self->_send_smtp(@recipients);
     }
     else {
@@ -404,12 +399,7 @@ sub _mail_send {
     $msg->add('X-Reported-Via', "Test::Reporter ${VERSION}$via");
     $msg->add('Cc', $recipients) if @_;
 
-    if ($self->mail_send_args() and ref $self->mail_send_args() eq 'ARRAY') {
-        $fh = $msg->open(@{$self->mail_send_args()});
-    }
-    else {
-        $fh = $msg->open();
-    }
+    $fh = $msg->open( $self->transport_args() );
 
     print $fh $self->report();
     
@@ -433,16 +423,24 @@ sub _send_smtp {
     my $smtp;
 
     my $mx;
+
+    my $transport = $self->transport;
+
     for my $server (@{$self->{_mx}}) {
-        $smtp = Net::SMTP->new($server, Hello => $helo,
-            Timeout => $self->{_timeout}, Debug => $debug);
+        eval {
+            $smtp = $transport->new($server, Hello => $helo,
+                Timeout => $self->{_timeout}, Debug => $debug,
+                $self->transport_args
+            );
+        }
+        my $err = $@ ? ": $@" || q{};
 
         if (defined $smtp) {
             $mx = $server;
             last;
         }
         else {
-            warn __PACKAGE__, ": Unable to connect to MX '$server'\n" if $self->debug();
+            warn __PACKAGE__, ": Unable to connect to MX '$server'$err\n" if $self->debug();
             $fail++;
         }
     }
@@ -479,29 +477,36 @@ sub _send_smtp {
     my $envelope_sender = $from;
     $envelope_sender =~ s/\s\([^)]+\)$//; # email only; no name
 
-    $success += $smtp->mail($envelope_sender);
-    $success += $smtp->to($self->{_address});
-    $success += $smtp->cc(@recipients) if @recipients;
-    $success += $smtp->data();
-    $success += $smtp->datasend("Date: ", $self->_format_date, "\n");
-    $success += $smtp->datasend("Subject: ", $self->subject(), "\n");
-    $success += $smtp->datasend("From: $from\n");
-    $success += $smtp->datasend("To: ", $self->{_address}, "\n");
-    $success += $smtp->datasend("Cc: $recipients\n") if @recipients && $success == 8;
-    $success += $smtp->datasend("Message-ID: ", $self->message_id(), "\n");
-    $success +=
-        $smtp->datasend("X-Reported-Via: Test::Reporter ${VERSION}$via\n");
-    $success += $smtp->datasend("\n");
-    $success += $smtp->datasend($self->report());
-    $success += $smtp->dataend();
-    $success += $smtp->quit;
-
-    if (@recipients) {
-        $self->errstr(__PACKAGE__ .
-            ": Unable to send test report to one or more recipients\n") if $success != 15;
+    # Net::SMTP::TLS dies on error so eval
+    eval {
+        $success += $smtp->mail($envelope_sender);
+        $success += $smtp->to($self->{_address});
+        $success += $smtp->cc(@recipients) if @recipients;
+        $success += $smtp->data();
+        $success += $smtp->datasend("Date: ", $self->_format_date, "\n");
+        $success += $smtp->datasend("Subject: ", $self->subject(), "\n");
+        $success += $smtp->datasend("From: $from\n");
+        $success += $smtp->datasend("To: ", $self->{_address}, "\n");
+        $success += $smtp->datasend("Cc: $recipients\n") if @recipients && $success == 8;
+        $success += $smtp->datasend("Message-ID: ", $self->message_id(), "\n");
+        $success +=
+            $smtp->datasend("X-Reported-Via: Test::Reporter ${VERSION}$via\n");
+        $success += $smtp->datasend("\n");
+        $success += $smtp->datasend($self->report());
+        $success += $smtp->dataend();
+        $success += $smtp->quit;
     }
-    else {
-        $self->errstr(__PACKAGE__ . ": Unable to send test report\n") if $success != 13;
+    my $err = $@;
+
+    if ( $err ) {
+        $self->errstr(__PACKAGE__ . ": Unable to send test report\n");
+    }
+    elsif (@recipients && $success != 15 ) {
+        $self->errstr(__PACKAGE__ .
+            ": Unable to send test report to one or more recipients\n"); 
+    }
+    elsif ($success != 13) {
+        $self->errstr(__PACKAGE__ . ": Unable to send test report\n");
     }
 
     return $self->errstr() ? 0 : 1;
@@ -554,20 +559,35 @@ sub mx {
     return $self->{_mx};
 }
 
+# Deprecated, but kept for backwards compatibility
+# Passes through to transport_args -- converting from array ref to list to
+# store and converting from list to array ref to get
 sub mail_send_args {
     my $self = shift;
     warn __PACKAGE__, ": mail_send_args\n" if $self->debug();
     croak __PACKAGE__, ": mail_send_args cannot be called unless Mail::Send is installed\n" unless $self->_have_mail_send();
-
     if (@_) {
         my $mail_send_args = shift;
-        croak __PACKAGE__, ": mail_send_args: array reference required" if
-            ref $mail_send_args ne 'ARRAY';
-        $self->{_mail_send_args} = $mail_send_args;
+        croak __PACKAGE__, ": mail_send_args: array reference required\n" 
+            if ref $mail_send_args ne 'ARRAY';
+        $self->transport_args(@$mail_send_args);
+    }
+    return [ $self->transport_args() ];
+}
+
+
+
+sub transport_args {
+    my $self = shift;
+    warn __PACKAGE__, ": transport_args\n" if $self->debug();
+    
+    if (@_) {
+        $self->{_transport_args} = [ @_ ];
     }
 
-    return $self->{_mail_send_args};
+    return @{ $self->{_transport_args} };
 }
+
 
 sub perl_version  {
     my $self = shift;
@@ -1022,12 +1042,14 @@ result. This must be one of:
   na        distribution will not work on this platform
   unknown   distribution did not include tests
 
-=item * B<mail_send_args>
+=item * B<mail_send_args> -- DEPRECATED
+
+Kept for backwards compatibility.  Use C<transport_args> instead.
 
 Optional. If you have MailTools installed and you want to have it
 behave in a non-default manner, parameters that you give this
 method will be passed directly to the constructor of
-Mail::Mailer. See L<Mail::Mailer> and L<Mail::Send> for details. 
+Mail::Mailer. See L<Mail::Mailer> and L<Mail::Send> for details.
 
 =item * B<message_id>
 
@@ -1095,17 +1117,26 @@ one will be selected automatically on your behalf: If you're on Windows,
 Net::SMTP will be selected, if you're not on Windows, Net::SMTP will be
 selected unless Mail::Send is installed, in which case Mail::Send is used.
 
-At the moment, this must be one of either 'Net::SMTP', or 'Mail::Send'.
-Support for authenticated SMTP may soon be possibly added as well.
+At the moment, this must be one of either 'Net::SMTP', 'Net::SMTP::TLS' or 
+'Mail::Send'.  If L<Net::SMTP::TLS> is used, 'Username' and 'Password'
+transport arguments must be provided as described below.
 
-If you specify 'Mail::Send' as a transport, you can add an additional
-argument in the form of an array reference which will be passed to the
-constructor of the lower-level Mail::Mailer. This can be used to great
-effect for all manner of fun and enjoyment. ;-)
+You can add additional arguments after the transport selection.  These will
+be passed to the constructor of the lower-level transport. This can be used
+to great effect for all manner of fun and enjoyment. ;-) See C<transport_args>.
+
+ $reporter->transport( 
+     'Net::SMTP::TLS', Username => 'jdoe', Password => '123' 
+ );
 
 This is not designed to be an extensible platform upon which to build
 transport plugins. That functionality is planned for the next-generation
 release of Test::Reporter, which will reside in the CPAN::Testers namespace.
+
+=item * B<transport_args>
+
+Optional.  Gets or sets transport arguments that will used in the constructor
+for the selected transport, as appropriate.
 
 =item * B<via>
 
@@ -1172,6 +1203,8 @@ and/or modify it under the same terms as Perl itself.
 
 =item * L<Net::SMTP>
 
+=item * L<Net::SMTP::TLS>
+
 =item * L<File::Spec>
 
 =item * L<File::Temp>
@@ -1201,6 +1234,8 @@ Richard Soderberg E<lt>F<rsod@cpan.org>E<gt>, with much deserved credit to
 Kirrily "Skud" Robert E<lt>F<skud@cpan.org>E<gt>, and
 Kurt Starsinic E<lt>F<Kurt.Starsinic@isinet.com>E<gt> for predecessor versions
 (CPAN::Test::Reporter, and cpantest respectively).
+
+Additional contributions by David A. Golden E<lt>dagolden@cpan.orgE<gt>.
 
 =cut
 
