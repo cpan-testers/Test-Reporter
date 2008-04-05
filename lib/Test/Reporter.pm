@@ -432,8 +432,8 @@ sub _send_smtp {
                 Timeout => $self->{_timeout}, Debug => $debug,
                 $self->transport_args
             );
-        }
-        my $err = $@ ? ": $@" || q{};
+        };
+        my $err = $@ ? ": $@" : q{};
 
         if (defined $smtp) {
             $mx = $server;
@@ -495,7 +495,7 @@ sub _send_smtp {
         $success += $smtp->datasend($self->report());
         $success += $smtp->dataend();
         $success += $smtp->quit;
-    }
+    };
     my $err = $@;
 
     if ( $err ) {
