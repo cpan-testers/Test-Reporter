@@ -191,6 +191,7 @@ sub transport {
         'Net::SMTP' => 'Builtin transport using Net::SMTP',
         'Net::SMTP::TLS' => 'Builtin transport using Net::SMTP::TLS',
         'Mail::Send' => 'Builtin transport using Mail::Send',
+        'HTTP' => 'Builtin transport using HTTP',
     );
 
     return $self->{_transport} unless scalar @_;
@@ -272,6 +273,9 @@ sub send {
     }
     elsif ($transport =~ /^Net::SMTP/ ) {
         return $self->_send_smtp(@recipients);
+    }
+    elsif ($transport eq 'HTTP' ) {
+        return $self->_send_http();
     }
     else {
         # Addresses #9831: Usage of Mail::Mailer is broken on Win32
@@ -432,8 +436,8 @@ sub _send_smtp {
                 Timeout => $self->{_timeout}, Debug => $debug,
                 $self->transport_args
             );
-        }
-        my $err = $@ ? ": $@" || q{};
+        };
+        my $err = $@ ? ": $@" : q{};
 
         if (defined $smtp) {
             $mx = $server;
@@ -495,7 +499,7 @@ sub _send_smtp {
         $success += $smtp->datasend($self->report());
         $success += $smtp->dataend();
         $success += $smtp->quit;
-    }
+    };
     my $err = $@;
 
     if ( $err ) {
@@ -510,6 +514,56 @@ sub _send_smtp {
     }
 
     return $self->errstr() ? 0 : 1;
+}
+
+sub _send_http {
+    my $self = shift;
+    warn __PACKAGE__, ": _send_http\n" if $self->debug();
+    
+    # need LWP
+    eval { require LWP::UserAgent };
+    if ($@) {
+        $self->errstr(__PACKAGE__ . 
+            ": LWP::UserAgent not installed -- can't use HTTP transport\n"
+        );
+        return;
+    }
+
+    # need a transport argument
+    my ($transport_url, $key) = $self->transport_args;
+    if ( ! defined $transport_url ) {
+        $self->errstr(__PACKAGE__ . 
+            ": No url argument provided for HTTP transport\n"
+        );
+        return;
+    }
+
+    # construct the "via"
+    my $via = "Test::Reporter ${VERSION}";
+    $via .= ', via ' . $self->via() if $self->via();
+
+    # post the report
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout(60);
+    $ua->env_proxy;
+
+    my $response = $ua->post(
+        key => $key,
+        via => $via,
+        from => $self->from(),
+        subject => $self->subject(),
+        report => $self->report(),
+    );
+
+    if ($response->is_success) {
+        return 1;
+    }
+    else {
+        $self->errstr(__PACKAGE__ . 
+            ": HTTP error: ". $response->status_line . "\n"
+        );
+        return;
+    }
 }
 
 # Courtesy of Email::MessageID
