@@ -530,8 +530,8 @@ sub _send_http {
     }
 
     # need a transport argument
-    my ($transport_url, $key) = $self->transport_args;
-    if ( ! defined $transport_url ) {
+    my ($url, $key) = $self->transport_args;
+    if ( ! defined $url ) {
         $self->errstr(__PACKAGE__ . 
             ": No url argument provided for HTTP transport\n"
         );
@@ -547,21 +547,25 @@ sub _send_http {
     $ua->timeout(60);
     $ua->env_proxy;
 
-    my $response = $ua->post(
+    my $form = {
         key => $key,
         via => $via,
         from => $self->from(),
         subject => $self->subject(),
         report => $self->report(),
-    );
+    };
+
+    my $response = $ua->post( $url, $form );
 
     if ($response->is_success) {
         return 1;
     }
     else {
         $self->errstr(__PACKAGE__ . 
-            ": HTTP error: ". $response->status_line . "\n"
+            ": HTTP error: ". $response->status_line . "\n" .
+            $response->content
         );
+    
         return;
     }
 }
