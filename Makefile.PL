@@ -1,7 +1,7 @@
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    (MM->can('signature_target') ? (SIGN => 1) : ()),
+#    (MM->can('signature_target') ? (SIGN => 1) : ()),
     'NAME' => 'Test::Reporter',
     'PM' => {
         'lib/Test/Reporter.pm' => '$(INST_LIBDIR)/Reporter.pm',

@@ -1,16 +1,18 @@
 --- #YAML:1.0
 name:                Test-Reporter
-version:             1.38
+version:             1.38_01
 abstract:            sends test results to cpan-testers@perl.org
 license:             perl
-generated_by:        ExtUtils::MakeMaker version 6.36
+author:              
+    - Adam J. Foxson <afoxson@pobox.com>
+generated_by:        ExtUtils::MakeMaker version 6.44
 distribution_type:   module
 requires:     
     File::Spec:                    0
     File::Temp:                    0
     Net::SMTP:                     0
+    Test:                          0
+    Test::More:                    0.47
 meta-spec:
-    url:     http://module-build.sourceforge.net/META-spec-v1.2.html
-    version: 1.2
-author:
-    - Adam J. Foxson <afoxson@pobox.com>
+    url:     http://module-build.sourceforge.net/META-spec-v1.3.html
+    version: 1.3
