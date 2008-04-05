@@ -23,8 +23,16 @@ BEGIN {
     
     $INC{"HTTP/Response.pm"} = 1;
     package HTTP::Response;
-    use vars qw/$Result/;
+    use vars qw/$AUTOLOAD $Result/;
     sub is_success { $Result };
+    sub status_line { '400' };
+    sub content { $Result ? "OK" : 'Major error' };
+    sub AUTOLOAD {
+        my $self = shift;
+        if ( @_ ) { $self->{ $AUTOLOAD } = shift }
+        return $self->{ $AUTOLOAD };
+    }
+    
 }
 
 #--------------------------------------------------------------------------#
@@ -34,7 +42,7 @@ my $from = 'johndoe@example.net';
 
 #--------------------------------------------------------------------------#
 
-plan tests => 4;
+plan tests => 6;
 
 require_ok( 'Test::Reporter' );
 
@@ -58,7 +66,15 @@ $reporter->transport("HTTP", $url, $form->{key});
 {
     local $LWP::UserAgent::Args;
     local $HTTP::Response::Result = 1; # ok
-    $reporter->send;
+    my $rc = $reporter->send;
     is( $LWP::UserAgent::Url, $url, "POST url appears correct" );
     is_deeply( $LWP::UserAgent::Args, $form, "POST data appears correct"); 
+    ok( $rc, "send() is true when successful" );
+}
+
+{
+    local $LWP::UserAgent::Args;
+    local $HTTP::Response::Result = 0; # ok
+    my $rc = $reporter->send;
+    ok( ! $rc, "send() false on failure" );
 }
