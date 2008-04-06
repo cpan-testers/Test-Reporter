@@ -124,6 +124,8 @@ ok($reporter->report =~ /Summary of my/);
 ok($reporter->grade, 'pass');
 ok($reporter->distribution, $distro);
 
+unlink $file;
+
 # testing perl-version with the current perl
 my $alt_perl = 'alt_perl.pl';
 my $no_version = $reporter->perl_version;
