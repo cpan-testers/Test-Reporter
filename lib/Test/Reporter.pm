@@ -201,7 +201,7 @@ sub transport {
 
     my $transport_class = "Test::Reporter::Transport::$transport";
     unless ( eval "require $transport_class; 1" ) { 
-        croak __PACKAGE__ . ": could not find '$transport_class'\n";
+        croak __PACKAGE__ . ": could not load '$transport_class'\n$@\n";
     }
 
     my @args = @_;
@@ -271,15 +271,15 @@ sub send {
 
     my $transport_type  = $self->transport() || 'Net::SMTP';
     my $transport_class = "Test::Reporter::Transport::$transport_type";
-    unless ( eval "require $transport_class; 1" ) { 
-        $self->errstr(__PACKAGE__ . ": could not find '$transport_class'\n");
-        return;
-    }
+#    unless ( eval "require $transport_class; 1" ) { 
+#        $self->errstr(__PACKAGE__ . ": could not find '$transport_class'\n");
+#        return;
+#    }
 
     my $transport = $transport_class->new( $self->transport_args() );
 
     unless (eval { $transport->send( $self, \@recipients ); 1 }) {
-        $self->errstr(__PACKAGE__ . ": could not find '$transport_class'\n");
+        $self->errstr(__PACKAGE__ . ": error from '$transport_class:'\n$@\n");
         return;
     }
 
@@ -690,44 +690,6 @@ sub _is_a_perl_release {
     my $perl = shift;
 
     return $perl =~ /^perl-?\d\.\d/;
-}
-
-
-# Next two subs courtesy of Casey West, Ricardo SIGNES, and Email::Date
-# Visit the Perl Email Project at: http://emailproject.perl.org/
-sub _tz_diff {
-    my $self = shift;
-    warn __PACKAGE__, ": _tz_diff\n" if $self->debug();
-
-    my ($time) = @_;
-
-    my $diff  =   Time::Local::timegm(localtime $time)
-                - Time::Local::timegm(gmtime    $time);
-
-    my $direc = $diff < 0 ? '-' : '+';
-       $diff  = abs $diff;
-    my $tz_hr = int( $diff / 3600 );
-    my $tz_mi = int( $diff / 60 - $tz_hr * 60 );
-
-    return ($direc, $tz_hr, $tz_mi);
-}
-
-sub _format_date {
-    my $self = shift;
-    warn __PACKAGE__, ": _format_date\n" if $self->debug();
-
-    my ($time) = @_;
-    $time = time unless defined $time;
-
-    my ($sec, $min, $hour, $mday, $mon, $year, $wday) = (localtime $time);
-    my $day   = (qw[Sun Mon Tue Wed Thu Fri Sat])[$wday];
-    my $month = (qw[Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec])[$mon];
-    $year += 1900;
-
-    my ($direc, $tz_hr, $tz_mi) = $self->_tz_diff($time);
-
-    sprintf "%s, %d %s %d %02d:%02d:%02d %s%02d%02d",
-      $day, $mday, $month, $year, $hour, $min, $sec, $direc, $tz_hr, $tz_mi;
 }
 
 =head1 NAME

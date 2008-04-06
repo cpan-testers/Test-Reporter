@@ -5,6 +5,7 @@ COPYING
 INSTALL
 lib/Test/Reporter.pm
 lib/Test/Reporter/Transport.pm
+lib/Test/Reporter/Transport/HTTPGateway.pm
 lib/Test/Reporter/Transport/Mail/Send.pm
 lib/Test/Reporter/Transport/Net/SMTP.pm
 lib/Test/Reporter/Transport/Net/SMTP/TLS.pm

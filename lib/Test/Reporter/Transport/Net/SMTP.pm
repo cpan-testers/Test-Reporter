@@ -14,8 +14,24 @@ sub new {
 sub _net_class {
     my ($self) = @_;
     my $class = ref $self ? ref $self : $self;
-    my ($net_class) =~ /^Test::Reporter::Transport::(.+)\z/;
+    my ($net_class) = ($class =~ /^Test::Reporter::Transport::(.+)\z/);
     return $net_class;
+}
+
+# Next two subs courtesy of Casey West, Ricardo SIGNES, and Email::Date
+# Visit the Perl Email Project at: http://emailproject.perl.org/
+sub _tz_diff {
+    my ($self, $time) = @_;
+
+    my $diff  =   Time::Local::timegm(localtime $time)
+                - Time::Local::timegm(gmtime    $time);
+
+    my $direc = $diff < 0 ? '-' : '+';
+       $diff  = abs $diff;
+    my $tz_hr = int( $diff / 3600 );
+    my $tz_mi = int( $diff / 60 - $tz_hr * 60 );
+
+    return ($direc, $tz_hr, $tz_mi);
 }
 
 sub _format_date {
@@ -42,7 +58,6 @@ sub send {
     my $via           = $report->via();
     my @tmprecipients = ();
     my @bad           = ();
-    my $success       = 0;
     my $smtp;
 
     my $mx;
@@ -67,7 +82,7 @@ sub send {
         }
     }
 
-    die "Unable to connect to any MX's" unless $mx && $smtp;
+    die "Unable to connect to any MX's: $@" unless $mx && $smtp;
 
     my $cc_str;
     if (@$recipients) {
@@ -97,28 +112,30 @@ sub send {
     my $envelope_sender = $from;
     $envelope_sender =~ s/\s\([^)]+\)$//; # email only; no name
 
-    $success += $smtp->mail($envelope_sender);
-    $success += $smtp->to($report->address);
-    $success += $smtp->cc(@$recipients) if @$recipients;
-    $success += $smtp->data();
-    $success += $smtp->datasend("Date: ", $self->_format_date, "\n");
-    $success += $smtp->datasend("Subject: ", $report->subject, "\n");
-    $success += $smtp->datasend("From: $from\n");
-    $success += $smtp->datasend("To: ", $self->address, "\n");
-    $success += $smtp->datasend("Cc: $cc_str\n") if @$recipients && $success == 8;
-    $success += $smtp->datasend("Message-ID: ", $report->message_id(), "\n");
-    $success +=
-        $smtp->datasend("X-Reported-Via: Test::Reporter $Test::Reporter::VERSION$via\n");
-    $success += $smtp->datasend("\n");
-    $success += $smtp->datasend($report->report());
-    $success += $smtp->dataend();
-    $success += $smtp->quit;
-
-    if (@$recipients && $success != 15 ) {
-        die "Unable to send test report to one or more recipients\n";
-    }
-    elsif ($success != 13) {
-        die "Unable to send test report\n";
+    # Net::SMTP returns 1 or undef for pass/fail 
+    # Net::SMTP::TLS croaks on fail but may not return 1 on pass
+    # so this closure lets us die on an undef return only for Net::SMTP
+    my $die = sub { die $smtp->message if ref $smtp eq 'Net::SMTP' };
+    
+    eval {
+        $smtp->mail($envelope_sender) or $die->();
+        $smtp->to($report->address) or $die->();
+        if ( @$recipients ) { $smtp->cc(@$recipients) or $die->() };
+        $smtp->data() or $die->();
+        $smtp->datasend("Date: ", $self->_format_date, "\n") or $die->();
+        $smtp->datasend("Subject: ", $report->subject, "\n") or $die->();
+        $smtp->datasend("From: $from\n") or $die->();
+        $smtp->datasend("To: ", $report->address, "\n") or $die->();
+        if ( @$recipients ) { $smtp->datasend("Cc: $cc_str\n") or $die->() };
+        $smtp->datasend("Message-ID: ", $report->message_id(), "\n") or $die->();
+        $smtp->datasend("X-Reported-Via: Test::Reporter $Test::Reporter::VERSION$via\n") or $die->();
+        $smtp->datasend("\n") or $die->();
+        $smtp->datasend($report->report()) or $die->();
+        $smtp->dataend() or $die->();
+        $smtp->quit or $die->();
+    };
+    if ($@) { 
+        die "$transport: " . $smtp->message;
     }
 
     return 1;

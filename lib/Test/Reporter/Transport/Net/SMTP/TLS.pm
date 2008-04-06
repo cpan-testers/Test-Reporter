@@ -6,4 +6,6 @@ use vars qw/$VERSION/;
 $VERSION = '1.39_02';
 $VERSION = eval $VERSION;
 
+use Net::SMTP::TLS;
+
 1;

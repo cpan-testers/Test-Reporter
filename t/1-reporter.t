@@ -5,7 +5,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 125 }
+BEGIN { plan tests => 124 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -220,8 +220,6 @@ ok(not $reporter->_is_a_perl_release('Perl-Visualize-1.02'));
 
 ok($reporter->message_id =~ /^<\d+\.[^.]+\.\d+@[^>]+>$/);
 
-ok($reporter->_format_date() =~ /^\w{3},\s\d{1,2}\s\w{3}\s\d{4}\s\d{2}:\d{2}:\d{2}\s[-+]\d{4}$/);
-
 undef $reporter;
 
 $reporter = Test::Reporter->new();
@@ -238,7 +236,7 @@ ok( $tls_args{Username} eq 'LarryW' );
 ok( $tls_args{Password} eq 'JAPH' );
 
 eval { $reporter->transport('Invalid'); };
-ok($@ =~ q{could not find 'Test::Reporter::Transport::Invalid'})
+ok($@ =~ q{could not load 'Test::Reporter::Transport::Invalid'})
     or print "# $@\n";
 
 {
