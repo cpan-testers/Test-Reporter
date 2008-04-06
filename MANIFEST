@@ -14,7 +14,6 @@ MANIFEST
 MANIFEST.SKIP
 META.yml			Module meta-data (added by MakeMaker)
 README
-SIGNATURE
 t/0-signature.t
 t/1-reporter.t
 t/2-http-transport.t
