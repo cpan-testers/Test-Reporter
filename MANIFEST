@@ -1,6 +1,7 @@
 .gitignore
 bin/cpantest
 Changes
+COPYING
 INSTALL
 lib/Test/Reporter.pm
 Makefile.PL

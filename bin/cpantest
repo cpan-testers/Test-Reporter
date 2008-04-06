@@ -1,16 +1,23 @@
 #!/usr/bin/perl -w
 
 # cpantest - sends test results to cpan-testers@perl.org
-# Copyright (c) 2007 Adam J. Foxson. All rights reserved.
-# Copyright (c) 2002 Autrijus Tang. All rights reserved.
-# Copyright (c) 1999 Kurt Starsinic. All rights reserved.
-
+#
+# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
+# Copyright (C) 2004, 2005 Richard Soderberg.
+# Copyright (C) 2002 Audrey Tang.
+# Copyright (C) 1999 Kurt Starsinic.
+# All rights reserved.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use strict;
 use Cwd;
@@ -349,18 +356,20 @@ further information.
 
 This version of the 'cpantest' script was adapted by Adam J. Foxson
 E<lt>F<afoxson@pobox.com>E<gt> for Test::Reporter, and is based on
-Autrijus Tang's E<lt>autrijus@autrijus.orgE<gt> adaptations for
+Audrey Tang's E<lt>cpan@audreyt.orgE<gt> adaptations for
 CPANPLUS, which is in turn based upon the original script by Kurt
 Starsinic E<lt>F<Kurt.Starsinic@isinet.com>E<gt> with various patches
 from the CPAN Testers E<lt>F<cpan-testers@perl.org>E<gt>.
 
 =head1 COPYRIGHT
 
-    Copyright (c) 2007 Adam J. Foxson. All rights reserved. 
-    Copyright (c) 2002 Autrijus Tang. All rights reserved.
-    Copyright (c) 1999 Kurt Starsinic. All rights reserved.
+ Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
+ Copyright (C) 2004, 2005 Richard Soderberg.
+ Copyright (C) 2002 Audrey Tang.
+ Copyright (C) 1999 Kurt Starsinic.
+ All rights reserved.
 
-    This program is free software; you may redistribute it
-    and/or modify it under the same terms as Perl itself.
+ This program is free software; you may redistribute it
+ and/or modify it under the same terms as Perl itself.
 
 =cut

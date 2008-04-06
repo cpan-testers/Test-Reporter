@@ -1,5 +1,14 @@
 use ExtUtils::MakeMaker;
 
+my $extra_meta = <<EOF;
+resources:
+    license: http://dev.perl.org/licenses/
+    homepage: http://code.google.com/p/test-reporter/
+    bugtracker: http://code.google.com/p/test-reporter/issues/list
+    Repository: http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
+    MailingList: http://groups.google.com/group/test-reporter
+EOF
+
 WriteMakefile(
 #    (MM->can('signature_target') ? (SIGN => 1) : ()),
     'NAME' => 'Test::Reporter',
@@ -28,5 +37,6 @@ WriteMakefile(
     'clean' => {
         'FILES' => '*.rpt',
     },
-    ($ExtUtils::MakeMaker::VERSION >= 6.31 ? (LICENSE  => 'perl') : ()),
+    ($ExtUtils::MakeMaker::VERSION >= 6.31 ? (LICENSE => 'perl') : ()),
+    ($ExtUtils::MakeMaker::VERSION >= 6.36 ? (EXTRA_META => $extra_meta) : ()),
 );

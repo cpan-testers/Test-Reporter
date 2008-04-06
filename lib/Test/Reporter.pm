@@ -1,12 +1,19 @@
 # Test::Reporter - sends test results to cpan-testers@perl.org
-# Copyright (c) 2007 Adam J. Foxson. All rights reserved.
-
+#
+# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
+# Copyright (C) 2004, 2005 Richard Soderberg.
+# All rights reserved.
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself.
-
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package Test::Reporter;
 
@@ -1001,7 +1008,7 @@ Discussion group for Test::Reporter
 
 The Wiki for Test::Reporter
 
-=item * L<http://repo.or.cz/w/test-reporter.git>
+=item * L<http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git>
 
 Test::Reporter's public git source code repository.
 
@@ -1257,8 +1264,10 @@ domain.  Setting the MAILDOMAIN environment variable will avoid this delay.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2007 Adam J. Foxson. All rights reserved.  Some revisions
-copyright (c) 2008 David A. Golden.
+ Copyright (C) 2008 David A. Golden.
+ Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
+ Copyright (C) 2004, 2005 Richard Soderberg.
+ All rights reserved.
 
 =head1 LICENSE
 
