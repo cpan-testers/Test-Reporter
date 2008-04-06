@@ -1,5 +1,6 @@
 # Test::Reporter - sends test results to cpan-testers@perl.org
 #
+# Copyright (C) 2008 David A. Golden
 # Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
 # Copyright (C) 2004, 2005 Richard Soderberg.
 # All rights reserved.
@@ -31,7 +32,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.38_01';
+$VERSION = '1.39_01';
 
 local $^W = 1;
 

@@ -2,7 +2,12 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
-1.38_01 in progress
+1.39_01 Sun Apr  6 01:16:10 EDT 2008
+        - Whoops!  Devel versions are supposed to be odd
+        - t/2-http-transport.t left out of MANIFEST
+        - Copyright notice updates
+ 
+1.38_01 Sat Apr  5 18:00:00 EDT 2008
         - Add support for 'HTTP' transport to a Test::Reporter::HTTPGateway
           server
 
