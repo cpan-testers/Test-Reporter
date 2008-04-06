@@ -12,9 +12,6 @@ EOF
 WriteMakefile(
 #    (MM->can('signature_target') ? (SIGN => 1) : ()),
     'NAME' => 'Test::Reporter',
-    'PM' => {
-        'lib/Test/Reporter.pm' => '$(INST_LIBDIR)/Reporter.pm',
-    },
     'PREREQ_PM' => {
         'Test::More' => 0.47,
         'Test'      => 0,

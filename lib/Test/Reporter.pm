@@ -194,20 +194,12 @@ sub transport {
     my $self = shift;
     warn __PACKAGE__, ": transport\n" if $self->debug();
 
-    my %transports    = (
-        # support for plugin transports will eventually be added, but not today
-        'Net::SMTP' => 'Builtin transport using Net::SMTP',
-        'Net::SMTP::TLS' => 'Builtin transport using Net::SMTP::TLS',
-        'Mail::Send' => 'Builtin transport using Mail::Send',
-        'HTTP' => 'Builtin transport using HTTP',
-    );
-
     return $self->{_transport} unless scalar @_;
 
     my $transport = shift;
 
-    croak __PACKAGE__, ":transport: '$transport' is invalid, choose from: " .
-        join ' ', keys %transports unless $transports{$transport};
+    croak __PACKAGE__, ":transport: '$transport' is invalid: $@" 
+      unless eval "require Test::Reporter::Transport::$transport; 1";
 
     my @args = @_;
 
@@ -274,26 +266,18 @@ sub send {
         return;
     }
 
-    my $transport = $self->transport();
+    my $transport_type  = $self->transport();
+    my $transport_class = "Test::Reporter::Transport::$transport_type";
+    eval "require $transport_class; 1" or die;
 
-    if ($transport eq 'Mail::Send' && $self->_have_mail_send()) {
-        return $self->_mail_send(@recipients);
+    my $transport = $transport_class->new( $self->transport_args() );
+
+    unless (eval { $transport->send( $self, \@recipients ); 1 }) {
+        $self->errstr($@);
+        return;
     }
-    elsif ($transport =~ /^Net::SMTP/ ) {
-        return $self->_send_smtp(@recipients);
-    }
-    elsif ($transport eq 'HTTP' ) {
-        return $self->_send_http();
-    }
-    else {
-        # Addresses #9831: Usage of Mail::Mailer is broken on Win32
-        if ($^O !~ /^(?:cygwin|MSWin32|VMS)$/ && $self->_have_mail_send()) {
-            return $self->_mail_send(@recipients);
-        }
-        else {
-            return $self->_send_smtp(@recipients);
-        }
-    }
+
+    return 1;
 }
 
 sub write {
@@ -385,197 +369,6 @@ sub _verify {
         join ', ', map {$_ =~ /^_(.+)$/} @undefined) if
         scalar @undefined > 0;
     return $self->errstr() ? return 0 : return 1;
-}
-
-sub _mail_send {
-    my $self = shift;
-    warn __PACKAGE__, ": _mail_send\n" if $self->debug();
-
-    my $fh;
-    my $recipients;
-    my @recipients = @_;
-    my $via        = $self->via();
-    my $msg        = Mail::Send->new();
-
-    if (@recipients) {
-        $recipients = join ', ', @recipients;
-        chomp $recipients;
-        chomp $recipients;
-    }
-
-    $via = ', via ' . $via if $via;
-
-    $msg->to($self->address());
-    $msg->set('From', $self->from());
-    $msg->subject($self->subject());
-    $msg->add('X-Reported-Via', "Test::Reporter ${VERSION}$via");
-    $msg->add('Cc', $recipients) if @_;
-
-    $fh = $msg->open( $self->transport_args() );
-
-    print $fh $self->report();
-    
-    $fh->close();
-}
-
-sub _send_smtp {
-    my $self = shift;
-    warn __PACKAGE__, ": _send_smtp\n" if $self->debug();
-
-    my $helo          = $self->_maildomain();
-    my $from          = $self->from();
-    my $via           = $self->via();
-    my $debug         = $self->debug();
-    my @recipients    = @_;
-    my @tmprecipients = ();
-    my @bad           = ();
-    my $success       = 0;
-    my $fail          = 0;
-    my $recipients;
-    my $smtp;
-
-    my $mx;
-
-    my $transport = $self->transport;
-
-    for my $server (@{$self->{_mx}}) {
-        eval {
-            $smtp = $transport->new($server, Hello => $helo,
-                Timeout => $self->{_timeout}, Debug => $debug,
-                $self->transport_args
-            );
-        };
-        my $err = $@ ? ": $@" : q{};
-
-        if (defined $smtp) {
-            $mx = $server;
-            last;
-        }
-        else {
-            warn __PACKAGE__, ": Unable to connect to MX '$server'$err\n" if $self->debug();
-            $fail++;
-        }
-    }
-
-    unless ($mx && $smtp) {
-        $self->errstr(__PACKAGE__ . ': Unable to connect to any MX\'s');
-        return 0;
-    }
-
-    if (@recipients) {
-        if ($mx =~ /(?:^|\.)(?:perl|cpan)\.org$/) {
-            for my $recipient (sort @recipients) {
-                if ($recipient =~ /(?:@|\.)(?:perl|cpan)\.org$/) {
-                    push @tmprecipients, $recipient;
-                } else {
-                    push @bad, $recipient;
-                }
-            }
-
-            if (@bad) {
-                warn __PACKAGE__, ": Will not attempt to cc the following recipients since perl.org MX's will not relay for them. Either install Mail::Send, use other MX's, or only cc address ending in cpan.org or perl.org: ${\(join ', ', @bad)}.\n";
-            }
-
-            @recipients = @tmprecipients;
-        }
-
-        $recipients = join ', ', @recipients;
-        chomp $recipients;
-        chomp $recipients;
-    }
-
-    $via = ', via ' . $via if $via;
-
-    my $envelope_sender = $from;
-    $envelope_sender =~ s/\s\([^)]+\)$//; # email only; no name
-
-    # Net::SMTP::TLS dies on error so eval
-    eval {
-        $success += $smtp->mail($envelope_sender);
-        $success += $smtp->to($self->{_address});
-        $success += $smtp->cc(@recipients) if @recipients;
-        $success += $smtp->data();
-        $success += $smtp->datasend("Date: ", $self->_format_date, "\n");
-        $success += $smtp->datasend("Subject: ", $self->subject(), "\n");
-        $success += $smtp->datasend("From: $from\n");
-        $success += $smtp->datasend("To: ", $self->{_address}, "\n");
-        $success += $smtp->datasend("Cc: $recipients\n") if @recipients && $success == 8;
-        $success += $smtp->datasend("Message-ID: ", $self->message_id(), "\n");
-        $success +=
-            $smtp->datasend("X-Reported-Via: Test::Reporter ${VERSION}$via\n");
-        $success += $smtp->datasend("\n");
-        $success += $smtp->datasend($self->report());
-        $success += $smtp->dataend();
-        $success += $smtp->quit;
-    };
-    my $err = $@;
-
-    if ( $err ) {
-        $self->errstr(__PACKAGE__ . ": Unable to send test report\n");
-    }
-    elsif (@recipients && $success != 15 ) {
-        $self->errstr(__PACKAGE__ .
-            ": Unable to send test report to one or more recipients\n"); 
-    }
-    elsif ($success != 13) {
-        $self->errstr(__PACKAGE__ . ": Unable to send test report\n");
-    }
-
-    return $self->errstr() ? 0 : 1;
-}
-
-sub _send_http {
-    my $self = shift;
-    warn __PACKAGE__, ": _send_http\n" if $self->debug();
-    
-    # need LWP
-    eval { require LWP::UserAgent };
-    if ($@) {
-        $self->errstr(__PACKAGE__ . 
-            ": LWP::UserAgent not installed -- can't use HTTP transport\n"
-        );
-        return;
-    }
-
-    # need a transport argument
-    my ($url, $key) = $self->transport_args;
-    if ( ! defined $url ) {
-        $self->errstr(__PACKAGE__ . 
-            ": No url argument provided for HTTP transport\n"
-        );
-        return;
-    }
-
-    # construct the "via"
-    my $via = "Test::Reporter ${VERSION}";
-    $via .= ', via ' . $self->via() if $self->via();
-
-    # post the report
-    my $ua = LWP::UserAgent->new;
-    $ua->timeout(60);
-    $ua->env_proxy;
-
-    my $form = {
-        key => $key,
-        via => $via,
-        from => $self->from(),
-        subject => $self->subject(),
-        report => $self->report(),
-    };
-
-    my $response = $ua->post( $url, $form );
-
-    if ($response->is_success) {
-        return 1;
-    }
-    else {
-        $self->errstr(__PACKAGE__ . 
-            ": HTTP error: ". $response->status_line . "\n" .
-            $response->content
-        );
-    
-        return;
-    }
 }
 
 # Courtesy of Email::MessageID

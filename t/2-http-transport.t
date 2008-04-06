@@ -54,14 +54,14 @@ $reporter->distribution('Mail-Freshmeat-1.20');
 $reporter->from($from);
 
 my $form = {
-    key => 123456789,
-    via =>     my $via = "Test::Reporter ${Test::Reporter::VERSION}",
-    from => $from,
+    key     => 123456789,
+    via     => my $via = "Test::Reporter ${Test::Reporter::VERSION}",
+    from    => $from,
     subject => $reporter->subject(),
-    report => $reporter->report(),
+    report  => $reporter->report(),
 };
 
-$reporter->transport("HTTP", $url, $form->{key});
+$reporter->transport("HTTPGateway", $url, $form->{key});
 
 {
     local $LWP::UserAgent::Args;

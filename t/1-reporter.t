@@ -242,7 +242,7 @@ ok( $tls_args{Username} eq 'LarryW' );
 ok( $tls_args{Password} eq 'JAPH' );
 
 eval { $reporter->transport('Invalid::Transport'); };
-ok($@ =~ q{is invalid, choose from});
+ok($@ =~ q{is invalid});
 
 {
     local $Test::Reporter::Send = 1;
