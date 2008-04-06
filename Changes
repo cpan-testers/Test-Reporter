@@ -1,5 +1,10 @@
-Revision history for Perl extension Test::Reporter. For canonical change info,
-visit the master repository at: http://repo.or.cz/w/test-reporter.git
+Revision history for Perl extension Test::Reporter. 
+For canonical change info, visit the master repository at 
+http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
+
+1.38_01 in progress
+        - Add support for 'HTTP' transport to a Test::Reporter::HTTPGateway
+          server
 
 1.38    Tue Oct 09 21:00:00 EDT 2007
         - Additional compatibility improvements for VMS.

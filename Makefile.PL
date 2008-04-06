@@ -1,12 +1,14 @@
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    (MM->can('signature_target') ? (SIGN => 1) : ()),
+#    (MM->can('signature_target') ? (SIGN => 1) : ()),
     'NAME' => 'Test::Reporter',
     'PM' => {
         'lib/Test/Reporter.pm' => '$(INST_LIBDIR)/Reporter.pm',
     },
     'PREREQ_PM' => {
+        'Test::More' => 0.47,
+        'Test'      => 0,
         'Net::SMTP' => 0,
         'File::Temp' => 0,
         'File::Spec' => 0,

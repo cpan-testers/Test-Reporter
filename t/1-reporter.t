@@ -247,7 +247,9 @@ ok($@ =~ q{is invalid, choose from});
     my @xport_args = ('foo', 'bar', 'baz', 'wibble', 'plink!');
     my $xport_args = \@xport_args;
     ok($reporter->transport('Mail::Send', $xport_args) eq 'Mail::Send');
-    ok($reporter->{_transport_args} eq $xport_args);
+    ok( join(" ", $reporter->transport_args) eq 
+        join(" ", @xport_args)
+    );
 }
 
 undef $reporter;

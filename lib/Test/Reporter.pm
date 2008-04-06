@@ -24,7 +24,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.38';
+$VERSION = '1.38_01';
 
 local $^W = 1;
 
@@ -191,6 +191,7 @@ sub transport {
         'Net::SMTP' => 'Builtin transport using Net::SMTP',
         'Net::SMTP::TLS' => 'Builtin transport using Net::SMTP::TLS',
         'Mail::Send' => 'Builtin transport using Mail::Send',
+        'HTTP' => 'Builtin transport using HTTP',
     );
 
     return $self->{_transport} unless scalar @_;
@@ -272,6 +273,9 @@ sub send {
     }
     elsif ($transport =~ /^Net::SMTP/ ) {
         return $self->_send_smtp(@recipients);
+    }
+    elsif ($transport eq 'HTTP' ) {
+        return $self->_send_http();
     }
     else {
         # Addresses #9831: Usage of Mail::Mailer is broken on Win32
@@ -510,6 +514,60 @@ sub _send_smtp {
     }
 
     return $self->errstr() ? 0 : 1;
+}
+
+sub _send_http {
+    my $self = shift;
+    warn __PACKAGE__, ": _send_http\n" if $self->debug();
+    
+    # need LWP
+    eval { require LWP::UserAgent };
+    if ($@) {
+        $self->errstr(__PACKAGE__ . 
+            ": LWP::UserAgent not installed -- can't use HTTP transport\n"
+        );
+        return;
+    }
+
+    # need a transport argument
+    my ($url, $key) = $self->transport_args;
+    if ( ! defined $url ) {
+        $self->errstr(__PACKAGE__ . 
+            ": No url argument provided for HTTP transport\n"
+        );
+        return;
+    }
+
+    # construct the "via"
+    my $via = "Test::Reporter ${VERSION}";
+    $via .= ', via ' . $self->via() if $self->via();
+
+    # post the report
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout(60);
+    $ua->env_proxy;
+
+    my $form = {
+        key => $key,
+        via => $via,
+        from => $self->from(),
+        subject => $self->subject(),
+        report => $self->report(),
+    };
+
+    my $response = $ua->post( $url, $form );
+
+    if ($response->is_success) {
+        return 1;
+    }
+    else {
+        $self->errstr(__PACKAGE__ . 
+            ": HTTP error: ". $response->status_line . "\n" .
+            $response->content
+        );
+    
+        return;
+    }
 }
 
 # Courtesy of Email::MessageID
@@ -1117,16 +1175,25 @@ one will be selected automatically on your behalf: If you're on Windows,
 Net::SMTP will be selected, if you're not on Windows, Net::SMTP will be
 selected unless Mail::Send is installed, in which case Mail::Send is used.
 
-At the moment, this must be one of either 'Net::SMTP', 'Net::SMTP::TLS' or 
-'Mail::Send'.  If L<Net::SMTP::TLS> is used, 'Username' and 'Password'
-transport arguments must be provided as described below.
+At the moment, this must be one of either 'Net::SMTP', 'Net::SMTP::TLS',
+'Mail::Send' or 'HTTP'.  You can add additional arguments after the transport
+selection.  These will be passed to the constructor of the lower-level
+transport. This can be used to great effect for all manner of fun and
+enjoyment. ;-) See C<transport_args>.
 
-You can add additional arguments after the transport selection.  These will
-be passed to the constructor of the lower-level transport. This can be used
-to great effect for all manner of fun and enjoyment. ;-) See C<transport_args>.
+If L<Net::SMTP::TLS> is used, 'Username' and 'Password' key-value transport
+arguments must be provided.
 
  $reporter->transport( 
      'Net::SMTP::TLS', Username => 'jdoe', Password => '123' 
+ );
+
+If the 'HTTP' transport is used, two additional arguments are required: 
+a URL to a L<Test::Reporter::HTTPGateway> compatible server and an (optional)
+API key.
+
+ $reporter->transport( 
+     'HTTP', 'http://example.com/reporter-gateway/', '123456' 
  );
 
 This is not designed to be an extensible platform upon which to build
@@ -1184,9 +1251,14 @@ Mail::Send installed) be sure that you use the author's @cpan.org address
 otherwise they may not be delivered, since the perl.org MX's are unlikely
 to relay for anything other than perl.org and cpan.org.
 
+If you experience a long delay sending mail with Test::Reporter, you may be 
+experiencing a wait as Test::Reporter attempts to determine your email 
+domain.  Setting the MAILDOMAIN environment variable will avoid this delay.
+
 =head1 COPYRIGHT
 
-Copyright (c) 2007 Adam J. Foxson. All rights reserved.
+Copyright (c) 2007 Adam J. Foxson. All rights reserved.  Some revisions
+copyright (c) 2008 David A. Golden.
 
 =head1 LICENSE
 
@@ -1224,6 +1296,10 @@ MX's known at the time of this release.
 
 This is optional. If it's installed Test::Reporter will use Mail::Send
 instead of Net::SMTP.
+
+=item * L<Test::Reporter::HTTPGateway>
+
+This is optional.  It provides a web API for the 'HTTP' transport method.
 
 =back
 
