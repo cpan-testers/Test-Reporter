@@ -1,7 +1,8 @@
 # Test::Reporter - sends test results to cpan-testers@perl.org
 #
-# Copyright (C) 2008 David A. Golden
 # Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
+# Copyright (C) 2008 David A. Golden
+# Copyright (C) 2008 Ricardo Signes
 # Copyright (C) 2004, 2005 Richard Soderberg.
 # All rights reserved.
 #
@@ -198,8 +199,10 @@ sub transport {
 
     my $transport = shift;
 
-    croak __PACKAGE__, ":transport: '$transport' is invalid: $@" 
-      unless eval "require Test::Reporter::Transport::$transport; 1";
+    my $transport_class = "Test::Reporter::Transport::$transport";
+    unless ( eval "require $transport_class; 1" ) { 
+        croak __PACKAGE__ . ": could not find '$transport_class'\n";
+    }
 
     my @args = @_;
 
@@ -266,14 +269,17 @@ sub send {
         return;
     }
 
-    my $transport_type  = $self->transport();
+    my $transport_type  = $self->transport() || 'Net::SMTP';
     my $transport_class = "Test::Reporter::Transport::$transport_type";
-    eval "require $transport_class; 1" or die;
+    unless ( eval "require $transport_class; 1" ) { 
+        $self->errstr(__PACKAGE__ . ": could not find '$transport_class'\n");
+        return;
+    }
 
     my $transport = $transport_class->new( $self->transport_args() );
 
     unless (eval { $transport->send( $self, \@recipients ); 1 }) {
-        $self->errstr($@);
+        $self->errstr(__PACKAGE__ . ": could not find '$transport_class'\n");
         return;
     }
 
@@ -971,13 +977,11 @@ reports. Default is 120 seconds.
 
 =item * B<transport>
 
-Optional. Gets or sets the transport method. If you do not specify a transport,
-one will be selected automatically on your behalf: If you're on Windows,
-Net::SMTP will be selected, if you're not on Windows, Net::SMTP will be
-selected unless Mail::Send is installed, in which case Mail::Send is used.
+Optional. Gets or sets the transport type. The transport type argument is 
+refers to a 'Test::Reporter::Transport' subclass.  The default is 'Net::SMTP',
+which uses the [Test::Reporter::Transport::Net::SMTP] class.
 
-At the moment, this must be one of either 'Net::SMTP', 'Net::SMTP::TLS',
-'Mail::Send' or 'HTTP'.  You can add additional arguments after the transport
+You can add additional arguments after the transport
 selection.  These will be passed to the constructor of the lower-level
 transport. This can be used to great effect for all manner of fun and
 enjoyment. ;-) See C<transport_args>.
@@ -1114,7 +1118,7 @@ Kirrily "Skud" Robert E<lt>F<skud@cpan.org>E<gt>, and
 Kurt Starsinic E<lt>F<Kurt.Starsinic@isinet.com>E<gt> for predecessor versions
 (CPAN::Test::Reporter, and cpantest respectively).
 
-Additional contributions by David A. Golden E<lt>dagolden@cpan.orgE<gt>.
+Additional contributions by David A. Golden and Ricardo Signes.
 
 =cut
 

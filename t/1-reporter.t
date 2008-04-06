@@ -5,7 +5,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 129 }
+BEGIN { plan tests => 125 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -228,24 +228,22 @@ $reporter = Test::Reporter->new();
 
 ok($reporter->transport() eq '');
 ok($reporter->{_transport} eq '');
-ok($reporter->transport('Mail::Send') eq 'Mail::Send');
-ok($reporter->{_transport} eq 'Mail::Send');
 ok($reporter->transport('Net::SMTP') eq 'Net::SMTP');
 ok($reporter->{_transport} eq 'Net::SMTP');
-ok($reporter->transport('Net::SMTP::TLS') eq 'Net::SMTP::TLS');
-ok($reporter->{_transport} eq 'Net::SMTP::TLS');
 
 # Arguments stored in _tls
-$reporter->transport('Net::SMTP::TLS', Username => 'LarryW', Password => 'JAPH');
+$reporter->transport('Net::SMTP', Username => 'LarryW', Password => 'JAPH');
 my %tls_args = $reporter->transport_args();
 ok( $tls_args{Username} eq 'LarryW' );
 ok( $tls_args{Password} eq 'JAPH' );
 
-eval { $reporter->transport('Invalid::Transport'); };
-ok($@ =~ q{is invalid});
+eval { $reporter->transport('Invalid'); };
+ok($@ =~ q{could not find 'Test::Reporter::Transport::Invalid'})
+    or print "# $@\n";
 
 {
     local $Test::Reporter::Send = 1;
+    local $INC{"Mail/Send.pm"} = 1; # pretend we have Mail::Send
     my @xport_args = ('foo', 'bar', 'baz', 'wibble', 'plink!');
     my $xport_args = \@xport_args;
     ok($reporter->transport('Mail::Send', $xport_args) eq 'Mail::Send');
