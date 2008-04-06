@@ -2,6 +2,9 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.39_02
+        - Refactored transport into Test::Reporter::Transport subclasses
+
 1.39_01 Sun Apr  6 01:16:10 EDT 2008
         - Whoops!  Devel versions are supposed to be odd
         - t/2-http-transport.t left out of MANIFEST

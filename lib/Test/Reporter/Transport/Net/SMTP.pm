@@ -2,6 +2,9 @@ use strict;
 use warnings;
 package Test::Reporter::Transport::Net::SMTP;
 use base 'Test::Reporter::Transport';
+use vars qw/$VERSION/
+$VERSION = '1.39_02';
+$VERSION = eval $VERSION;
 
 sub new {
     my ($class, @args) = @_;
