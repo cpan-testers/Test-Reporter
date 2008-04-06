@@ -5,7 +5,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 125 }
+BEGIN { plan tests => 129 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -230,6 +230,14 @@ ok($reporter->transport('Mail::Send') eq 'Mail::Send');
 ok($reporter->{_transport} eq 'Mail::Send');
 ok($reporter->transport('Net::SMTP') eq 'Net::SMTP');
 ok($reporter->{_transport} eq 'Net::SMTP');
+ok($reporter->transport('Net::SMTP::TLS') eq 'Net::SMTP::TLS');
+ok($reporter->{_transport} eq 'Net::SMTP::TLS');
+
+# Arguments stored in _tls
+$reporter->transport('Net::SMTP::TLS', Username => 'LarryW', Password => 'JAPH');
+my %tls_args = $reporter->transport_args();
+ok( $tls_args{Username} eq 'LarryW' );
+ok( $tls_args{Password} eq 'JAPH' );
 
 eval { $reporter->transport('Invalid::Transport'); };
 ok($@ =~ q{is invalid, choose from});
@@ -239,7 +247,7 @@ ok($@ =~ q{is invalid, choose from});
     my @xport_args = ('foo', 'bar', 'baz', 'wibble', 'plink!');
     my $xport_args = \@xport_args;
     ok($reporter->transport('Mail::Send', $xport_args) eq 'Mail::Send');
-    ok($reporter->{_mail_send_args} eq $xport_args);
+    ok($reporter->{_transport_args} eq $xport_args);
 }
 
 undef $reporter;
