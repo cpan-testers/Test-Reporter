@@ -271,14 +271,9 @@ sub send {
 
     my $transport_type  = $self->transport() || 'Net::SMTP';
     my $transport_class = "Test::Reporter::Transport::$transport_type";
-#    unless ( eval "require $transport_class; 1" ) { 
-#        $self->errstr(__PACKAGE__ . ": could not find '$transport_class'\n");
-#        return;
-#    }
-
     my $transport = $transport_class->new( $self->transport_args() );
 
-    unless (eval { $transport->send( $self, \@recipients ); 1 }) {
+    unless ( eval { $transport->send( $self, \@recipients ) } ) {
         $self->errstr(__PACKAGE__ . ": error from '$transport_class:'\n$@\n");
         return;
     }
@@ -691,6 +686,8 @@ sub _is_a_perl_release {
 
     return $perl =~ /^perl-?\d\.\d/;
 }
+
+__END__
 
 =head1 NAME
 
