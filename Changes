@@ -2,6 +2,9 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.39_03
+        - Added documentation for transport
+
 1.39_02
         - Refactored transport into Test::Reporter::Transport subclasses
 
