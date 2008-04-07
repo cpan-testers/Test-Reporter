@@ -5,6 +5,7 @@ COPYING
 INSTALL
 lib/Test/Reporter.pm
 lib/Test/Reporter/Transport.pm
+lib/Test/Reporter/Transport/File.pm
 lib/Test/Reporter/Transport/HTTPGateway.pm
 lib/Test/Reporter/Transport/Mail/Send.pm
 lib/Test/Reporter/Transport/Net/SMTP.pm
@@ -17,5 +18,6 @@ README
 t/0-signature.t
 t/1-reporter.t
 t/2-http-transport.t
+t/3-file-transport.t
 t/98-pod.t
 t/99-pod_coverage.t
