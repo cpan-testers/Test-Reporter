@@ -117,7 +117,7 @@ sub _process_params {
 
     my %params   = @_;
     my @defaults = qw(
-        mx address grade distribution from comments via timeout debug dir perl_version transport transport_args);
+        mx address grade distribution from comments via timeout debug dir perl_version transport_args transport );
     my %defaults = map {$_ => 1} @defaults;
 
     for my $param (keys %params) {   
