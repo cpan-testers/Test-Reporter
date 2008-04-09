@@ -3,7 +3,7 @@ use warnings;
 package Test::Reporter::Transport::File;
 use base 'Test::Reporter::Transport';
 use vars qw/$VERSION/;
-$VERSION = '1.39_04';
+$VERSION = '1.39_05';
 $VERSION = eval $VERSION;
 
 sub new {

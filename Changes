@@ -2,6 +2,10 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.39_05 Wed Apr  9 12:43:55 EDT 2008
+        - removed use of File::Temp->newdir() for backwards compatibility
+          with older versions of File::Temp
+
 1.39_04 Mon Apr  7 17:25:35 EDT 2008
         - Added Test::Reporter::Transport::File subclass
 
