@@ -42,12 +42,16 @@ my $from = 'johndoe@example.net';
 
 #--------------------------------------------------------------------------#
 
-plan tests => 6;
+plan tests => 8;
 
 require_ok( 'Test::Reporter' );
 
+#--------------------------------------------------------------------------#
+# simple test
+#--------------------------------------------------------------------------#
+
 my $reporter = Test::Reporter->new();
-ok(ref $reporter, 'Test::Reporter');
+isa_ok($reporter, 'Test::Reporter');
 
 $reporter->grade('pass');
 $reporter->distribution('Mail-Freshmeat-1.20');
@@ -78,3 +82,19 @@ $reporter->transport("HTTPGateway", $url, $form->{key});
     my $rc = $reporter->send;
     ok( ! $rc, "send() false on failure" );
 }
+
+#--------------------------------------------------------------------------#
+# test specifying arguments in the constructor
+#--------------------------------------------------------------------------#
+
+my $transport_args = [$url, $form->{key}];
+
+$reporter = Test::Reporter->new(
+  transport => "HTTPGateway",
+  transport_args => $transport_args,
+);
+isa_ok($reporter, 'Test::Reporter');
+
+is_deeply( [ $reporter->transport_args ], $transport_args,
+  "transport_args set correctly by new()"
+);

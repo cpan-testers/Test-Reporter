@@ -33,7 +33,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.39_05';
+$VERSION = '1.39_06';
 
 local $^W = 1;
 
@@ -442,7 +442,7 @@ sub transport_args {
     warn __PACKAGE__, ": transport_args\n" if $self->debug();
     
     if (@_) {
-        $self->{_transport_args} = [ @_ ];
+        $self->{_transport_args} = ref $_[0] eq 'ARRAY' ? $_[0] : [ @_ ];
     }
 
     return @{ $self->{_transport_args} };
