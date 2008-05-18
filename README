@@ -160,7 +160,9 @@ METHODS
           na        distribution will not work on this platform
           unknown   distribution did not include tests
 
-    *   mail_send_args
+    *   mail_send_args -- DEPRECATED
+
+        Kept for backwards compatibility. Use "transport_args" instead.
 
         Optional. If you have MailTools installed and you want to have it
         behave in a non-default manner, parameters that you give this method
@@ -229,25 +231,40 @@ METHODS
 
     *   transport
 
-        Optional. Gets or sets the transport method. If you do not specify a
-        transport, one will be selected automatically on your behalf: If
-        you're on Windows, Net::SMTP will be selected, if you're not on
-        Windows, Net::SMTP will be selected unless Mail::Send is installed,
-        in which case Mail::Send is used.
+        Optional. Gets or sets the transport type. The transport type
+        argument is refers to a 'Test::Reporter::Transport' subclass. The
+        default is 'Net::SMTP', which uses the
+        [Test::Reporter::Transport::Net::SMTP] class.
 
-        At the moment, this must be one of either 'Net::SMTP', or
-        'Mail::Send'. Support for authenticated SMTP may soon be possibly
-        added as well.
+        You can add additional arguments after the transport selection.
+        These will be passed to the constructor of the lower-level
+        transport. This can be used to great effect for all manner of fun
+        and enjoyment. ;-) See "transport_args".
 
-        If you specify 'Mail::Send' as a transport, you can add an
-        additional argument in the form of an array reference which will be
-        passed to the constructor of the lower-level Mail::Mailer. This can
-        be used to great effect for all manner of fun and enjoyment. ;-)
+        If Net::SMTP::TLS is used, 'Username' and 'Password' key-value
+        transport arguments must be provided.
+
+         $reporter->transport( 
+             'Net::SMTP::TLS', Username => 'jdoe', Password => '123' 
+         );
+
+        If the 'HTTP' transport is used, two additional arguments are
+        required: a URL to a Test::Reporter::HTTPGateway compatible server
+        and an (optional) API key.
+
+         $reporter->transport( 
+             'HTTP', 'http://example.com/reporter-gateway/', '123456' 
+         );
 
         This is not designed to be an extensible platform upon which to
         build transport plugins. That functionality is planned for the
         next-generation release of Test::Reporter, which will reside in the
         CPAN::Testers namespace.
+
+    *   transport_args
+
+        Optional. Gets or sets transport arguments that will used in the
+        constructor for the selected transport, as appropriate.
 
     *   via
 
@@ -293,13 +310,16 @@ CAVEATS
     address otherwise they may not be delivered, since the perl.org MX's are
     unlikely to relay for anything other than perl.org and cpan.org.
 
+    If you experience a long delay sending mail with Test::Reporter, you may
+    be experiencing a wait as Test::Reporter attempts to determine your
+    email domain. Setting the MAILDOMAIN environment variable will avoid
+    this delay.
+
 COPYRIGHT
+     Copyright (C) 2008 David A. Golden.
      Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
      Copyright (C) 2004, 2005 Richard Soderberg.
      All rights reserved.
-
-     This program is free software; you may redistribute it
-     and/or modify it under the same terms as Perl itself.
 
 LICENSE
     This program is free software; you may redistribute it and/or modify it
@@ -311,6 +331,8 @@ SEE ALSO
     *   Config
 
     *   Net::SMTP
+
+    *   Net::SMTP::TLS
 
     *   File::Spec
 
@@ -332,9 +354,16 @@ SEE ALSO
         This is optional. If it's installed Test::Reporter will use
         Mail::Send instead of Net::SMTP.
 
+    *   Test::Reporter::HTTPGateway
+
+        This is optional. It provides a web API for the 'HTTP' transport
+        method.
+
 AUTHOR
     Adam J. Foxson <afoxson@pobox.com> and Richard Soderberg
     <rsod@cpan.org>, with much deserved credit to Kirrily "Skud" Robert
     <skud@cpan.org>, and Kurt Starsinic <Kurt.Starsinic@isinet.com> for
     predecessor versions (CPAN::Test::Reporter, and cpantest respectively).
+
+    Additional contributions by David A. Golden and Ricardo Signes.
 

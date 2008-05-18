@@ -5,7 +5,7 @@ resources:
     license: http://dev.perl.org/licenses/
     homepage: http://code.google.com/p/test-reporter/
     bugtracker: http://code.google.com/p/test-reporter/issues/list
-    Repository: http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
+    Repository: http://echo.dagolden.com/git/?p=Test-Reporter
     MailingList: http://groups.google.com/group/test-reporter
 EOF
 

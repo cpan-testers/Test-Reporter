@@ -2,6 +2,9 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.40 Sun May 18 14:54:46 EDT 2008
+        - no change from 1.39_06
+
 1.39_06 Thu Apr 17 06:15:45 EDT 2008
         - fixed bug setting transport_args in constructor
 

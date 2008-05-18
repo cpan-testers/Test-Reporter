@@ -1,6 +1,7 @@
 ^[a-z]+.Test-Reporter-.*.rpt$
 .svn/
 .git/
+.gitignore
 blib/
 Makefile$
 Makefile.old
