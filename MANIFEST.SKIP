@@ -3,6 +3,7 @@
 .git/
 .gitignore
 blib/
+cover_db/
 Makefile$
 Makefile.old
 MANIFEST.bak
