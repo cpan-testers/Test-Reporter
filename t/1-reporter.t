@@ -224,8 +224,11 @@ undef $reporter;
 
 $reporter = Test::Reporter->new();
 
-ok($reporter->transport() eq '');
-ok($reporter->{_transport} eq '');
+ok($reporter->transport() eq 'Net::SMTP');
+ok($reporter->{_transport} eq 'Net::SMTP');
+
+undef $reporter;
+$reporter = Test::Reporter->new();
 ok($reporter->transport('Net::SMTP') eq 'Net::SMTP');
 ok($reporter->{_transport} eq 'Net::SMTP');
 

@@ -79,6 +79,7 @@ sub new {
         unless scalar @_ % 2 == 0;
 
     $self->_process_params(@_) if @_;
+    $self->transport('Net::SMTP') unless $self->transport();
     $self->_get_mx(@_) if $self->_have_net_dns();
 
     return $self;
