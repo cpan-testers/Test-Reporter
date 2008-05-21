@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Test::Reporter::Transport;
 use vars qw/$VERSION/;
-$VERSION = '1.40';
+$VERSION = '1.4001';
 $VERSION = eval $VERSION;
 
 sub new     { die "Not implemented" }

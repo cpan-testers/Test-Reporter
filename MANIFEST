@@ -17,5 +17,7 @@ t/0-signature.t
 t/1-reporter.t
 t/2-http-transport.t
 t/3-file-transport.t
+t/4-net-smtp-transport.t
+t/5-net-smtp-tls-transport.t
 t/98-pod.t
 t/99-pod_coverage.t
