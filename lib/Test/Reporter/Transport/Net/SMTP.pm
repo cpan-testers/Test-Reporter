@@ -133,10 +133,8 @@ sub send {
         $smtp->datasend($report->report()) or $die->();
         $smtp->dataend() or $die->();
         $smtp->quit or $die->();
-    };
-    if ($@) { 
-        die "$transport: " . $smtp->message;
-    }
+        1;
+    } or die "$transport: $@";
 
     return 1;
 }
