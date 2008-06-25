@@ -2,6 +2,9 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.4002 Wed Jun 25 17:21:10 EDT 2008
+        - fixed bug in error handling when using TLS transport
+
 1.4001 Wed May 21 12:34:28 EDT 2008
         - fixed bug where send() would crash when no explicit transport 
           was set.
