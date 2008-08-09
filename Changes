@@ -2,6 +2,9 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.4003
+        - doc fix on usage of read() in Test::Reporter::Transport::File
+      
 1.4002 Wed Jun 25 17:21:10 EDT 2008
         - fixed bug in error handling when using TLS transport
 

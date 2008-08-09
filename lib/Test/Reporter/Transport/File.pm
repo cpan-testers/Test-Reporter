@@ -3,7 +3,7 @@ use warnings;
 package Test::Reporter::Transport::File;
 use base 'Test::Reporter::Transport';
 use vars qw/$VERSION/;
-$VERSION = '1.4002';
+$VERSION = '1.4003';
 $VERSION = eval $VERSION;
 
 sub new {
@@ -44,7 +44,7 @@ the C<write> method from Test::Reporter.
 This lets you save reports during offline operation.  The files may later be
 uploaded using C<< Test::Reporter->read() >>.
 
-    Test::Reporter->read( $file )->send();
+    Test::Reporter->new->read( $file )->send();
 
 =head1 USAGE
 
