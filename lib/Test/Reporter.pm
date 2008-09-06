@@ -33,7 +33,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.50';
+$VERSION = '1.51_01';
 
 local $^W = 1;
 
@@ -225,6 +225,7 @@ sub edit_comments {
     my %tempfile_args = (
         UNLINK => 1,
         SUFFIX => '.txt',
+        EXLOCK => 0,
     );
 
     if (exists $args{'suffix'} && defined $args{'suffix'} && length $args{'suffix'}) {

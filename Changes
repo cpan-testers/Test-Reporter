@@ -2,6 +2,11 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.51_01 Sat Sep  6 14:34:13 EDT 2008
+
+        - avoid exclusive lock on tempfile for editing report 
+          (Slaven Rezick)
+        
 1.50 Sat Sep  6 14:04:22 EDT 2008
         - Deprecated sending reports to anywhere other than the
           cpan-testers mailing list.  This means that authors will no
