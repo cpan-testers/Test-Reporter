@@ -2,7 +2,13 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
-1.4003
+1.50 Sat Sep  6 14:04:22 EDT 2008
+        - Deprecated sending reports to anywhere other than the
+          cpan-testers mailing list.  This means that authors will no
+          longer be copied on report emails by individual testers. 
+          (CPAN Testers is switching to an opt-in philosophy with central
+          author notifications.)
+
         - doc fix on usage of read() in Test::Reporter::Transport::File
       
 1.4002 Wed Jun 25 17:21:10 EDT 2008

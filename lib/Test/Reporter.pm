@@ -255,7 +255,7 @@ sub edit_comments {
 }
 
 sub send {
-    my ($self, @recipients) = @_;
+    my ($self) = @_;
     warn __PACKAGE__, ": send\n" if $self->debug();
 
     $self->from();
@@ -274,7 +274,7 @@ sub send {
     my $transport_class = "Test::Reporter::Transport::$transport_type";
     my $transport = $transport_class->new( $self->transport_args() );
 
-    unless ( eval { $transport->send( $self, \@recipients ) } ) {
+    unless ( eval { $transport->send( $self ) } ) {
         $self->errstr(__PACKAGE__ . ": error from '$transport_class:'\n$@\n");
         return;
     }
@@ -712,7 +712,7 @@ Test::Reporter - sends test results to cpan-testers@perl.org
   $reporter->distribution('Mail-Freshmeat-1.20');
   $reporter->comments('output of a failed make test goes here...');
   $reporter->edit_comments(); # if you want to edit comments in an editor
-  $reporter->send('afoxson@cpan.org') || die $reporter->errstr();
+  $reporter->send() || die $reporter->errstr();
 
   # or
 
@@ -865,7 +865,7 @@ result. This must be one of:
   pass      all tests passed
   fail      one or more tests failed
   na        distribution will not work on this platform
-  unknown   distribution did not include tests
+  unknown   tests did not exist or could not be run 
 
 =item * B<mail_send_args> -- DEPRECATED
 
@@ -916,13 +916,10 @@ comments to make and expect them to be included in the report.
 
 =item * B<send>
 
-Sends the test report to cpan-testers@perl.org and cc's the e-mail to the
-specified recipients, if any. If you do specify recipients to be cc'd and
-you do not have Mail::Send installed be sure that you use the author's
-@cpan.org address otherwise they will not be delivered. You must check
-errstr() on a send() in order to be guaranteed delivery. Technically, this
-is optional, as you may use Test::Reporter to only obtain the 'subject' and
-'report' without sending an e-mail at all, although that would be unusual.
+Sends the test report to cpan-testers@perl.org.  You must check errstr() on a
+send() in order to be guaranteed delivery. Technically, send() is optional, as
+you may use Test::Reporter to only obtain the 'subject' and 'report' without
+sending an e-mail at all, although that would be unusual.
 
 =item * B<subject>
 
@@ -1011,11 +1008,6 @@ write() also accepts an optional filehandle argument:
 
 =head1 CAVEATS
 
-If you specify recipients to be cc'd while using send() (and you do not have
-Mail::Send installed) be sure that you use the author's @cpan.org address
-otherwise they may not be delivered, since the perl.org MX's are unlikely
-to relay for anything other than perl.org and cpan.org.
-
 If you experience a long delay sending mail with Test::Reporter, you may be 
 experiencing a wait as Test::Reporter attempts to determine your email 
 domain.  Setting the MAILDOMAIN environment variable will avoid this delay.
@@ -1059,26 +1051,20 @@ This is optional. If it's installed Test::Reporter will dynamically
 retrieve the mail exchangers for perl.org, instead of relying on the
 MX's known at the time of this release.
 
-=item * L<Mail::Send>
-
-This is optional. If it's installed Test::Reporter will use Mail::Send
-instead of Net::SMTP.
-
 =item * L<Test::Reporter::HTTPGateway>
 
 This is optional.  It provides a web API for the 'HTTP' transport method.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Adam J. Foxson E<lt>F<afoxson@pobox.com>E<gt> and
-Richard Soderberg E<lt>F<rsod@cpan.org>E<gt>, with much deserved credit to
-Kirrily "Skud" Robert E<lt>F<skud@cpan.org>E<gt>, and
-Kurt Starsinic E<lt>F<Kurt.Starsinic@isinet.com>E<gt> for predecessor versions
-(CPAN::Test::Reporter, and cpantest respectively).
-
-Additional contributions by David A. Golden and Ricardo Signes.
+ Adam J. Foxson <afoxson@pobox.com>
+ David Golden <dagolden@cpan.org>
+ Kirrily "Skud" Robert <skud@cpan.org>
+ Ricardo Signes <rjbs@cpan.org>
+ Richard Soderberg <rsod@cpan.org>
+ Kurt Starsinic <Kurt.Starsinic@isinet.com>
 
 =cut
 
