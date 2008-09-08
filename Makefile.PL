@@ -28,7 +28,7 @@ WriteMakefile(
     (   
         $] >= 5.005 ?  (   
             ABSTRACT_FROM => 'lib/Test/Reporter.pm',
-            AUTHOR => 'Adam J. Foxson <afoxson@pobox.com>',
+            AUTHOR => 'David Golden <dagolden@cpan.org>',
         ) : ()
     ),
     'clean' => {
