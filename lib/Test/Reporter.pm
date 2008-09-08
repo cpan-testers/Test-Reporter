@@ -33,7 +33,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.51_01';
+$VERSION = '1.51_02';
 
 local $^W = 1;
 
@@ -563,85 +563,99 @@ sub _prompt {
 }
 
 # From Mail::Util 1.74 (c) 1995-2001 Graham Barr (c) 2002-2005 Mark Overmeer
-sub _maildomain {
-    my $self = shift;
-    warn __PACKAGE__, ": _maildomain\n" if $self->debug();
+{   
+  # cache the mail domain, so we don't try to resolve this *every* time
+  # (thanks you kane)
+  my $domain;     
 
-    my $domain = $ENV{MAILDOMAIN};
+  sub _maildomain {
+      my $self = shift;
+      warn __PACKAGE__, ": _maildomain\n" if $self->debug();
+      
+      # use cached value if set
+      return $domain if defined $domain;
 
-    return $domain if defined $domain;
+      # prefer MAILDOMAIN if set
+      if ( defined $ENV{MAILDOMAIN} ) {
+        return $domain = $ENV{MAILDOMAIN};
+      }
 
-    local *CF;
-    local $_;
+      local *CF;
+      local $_;
 
-    my @sendmailcf = qw(
-        /etc /etc/sendmail /etc/ucblib /etc/mail /usr/lib /var/adm/sendmail
-    );
+      my @sendmailcf = qw(
+          /etc /etc/sendmail /etc/ucblib /etc/mail /usr/lib /var/adm/sendmail
+      );
 
-    my $config = (grep(-r, map("$_/sendmail.cf", @sendmailcf)))[0];
+      my $config = (grep(-r, map("$_/sendmail.cf", @sendmailcf)))[0];
 
-    if (defined $config && open(CF, $config)) {
-        my %var;
-        while (<CF>) {
-            if (my ($v, $arg) = /^D([a-zA-Z])([\w.\$\-]+)/) {
-                $arg =~ s/\$([a-zA-Z])/exists $var{$1} ? $var{$1} : '$'.$1/eg;
-                $var{$v} = $arg;
-            }
-        }
-        close(CF) || die $!;
-        $domain = $var{j} if defined $var{j};
-        $domain = $var{M} if defined $var{M};
+      if (defined $config && open(CF, $config)) {
+          my %var;
+          while (<CF>) {
+              if (my ($v, $arg) = /^D([a-zA-Z])([\w.\$\-]+)/) {
+                  $arg =~ s/\$([a-zA-Z])/exists $var{$1} ? $var{$1} : '$'.$1/eg;
+                  $var{$v} = $arg;
+              }
+          }
+          close(CF) || die $!;
+          $domain = $var{j} if defined $var{j};
+          $domain = $var{M} if defined $var{M};
 
-        $domain = $1
-            if ($domain && $domain =~ m/([A-Za-z0-9](?:[\.\-A-Za-z0-9]+))/);
+          $domain = $1
+              if ($domain && $domain =~ m/([A-Za-z0-9](?:[\.\-A-Za-z0-9]+))/);
 
-        undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+          undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
 
-        return $domain if (defined $domain && $domain !~ /\$/);
-    }
+          return $domain if (defined $domain && $domain !~ /\$/);
+      }
 
-    if (open(CF, "/usr/lib/smail/config")) {
-        while (<CF>) {
-            if (/\A\s*hostnames?\s*=\s*(\S+)/) {
-                $domain = (split(/:/,$1))[0];
-                undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
-                last if defined $domain and $domain;
-            }
-        }
-        close(CF) || die $!;
+      if (open(CF, "/usr/lib/smail/config")) {
+          while (<CF>) {
+              if (/\A\s*hostnames?\s*=\s*(\S+)/) {
+                  $domain = (split(/:/,$1))[0];
+                  undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+                  last if defined $domain and $domain;
+              }
+          }
+          close(CF) || die $!;
 
-        return $domain if defined $domain;
-    }
+          return $domain if defined $domain;
+      }
 
-    if (eval {require Net::SMTP}) {
-        my $host;
+      if (eval {require Net::SMTP}) {
+          my $host;
 
-        for $host (qw(mailhost localhost)) {
-            my $smtp = eval {Net::SMTP->new($host)};
+              for $host (qw(mailhost smtp localhost)) {
+              
+                  # default timeout is 120, which is Very Very Long, so lower
+                  # it to 5 seconds. Total slowdown will not be more than
+                  # 15 seconds ( 5 x @hosts ) --kane
+                  my $smtp = eval {Net::SMTP->new($host, Timeout => 5)};
 
-            if (defined $smtp) {
-                $domain = $smtp->domain;
-                $smtp->quit;
-                undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
-                last if defined $domain and $domain;
-            }
-        }
-    }
+              if (defined $smtp) {
+                  $domain = $smtp->domain;
+                  $smtp->quit;
+                  undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+                  last if defined $domain and $domain;
+              }
+          }
+      }
 
-    unless (defined $domain) {
-        if ($self->_have_net_domain()) {
-            ###################################################################
-            # The below statement might possibly exhibit intermittent blocking
-            # behavior. Be advised!
-            ###################################################################
-            $domain = Net::Domain::domainname();
-            undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
-        }
-    }
+      unless (defined $domain) {
+          if ($self->_have_net_domain()) {
+              ###################################################################
+              # The below statement might possibly exhibit intermittent blocking
+              # behavior. Be advised!
+              ###################################################################
+              $domain = Net::Domain::domainname();
+              undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+          }
+      }
 
-    $domain = "localhost" unless defined $domain;
+      $domain = "localhost" unless defined $domain;
 
-    return $domain;
+      return $domain;
+  }
 }
 
 # From Mail::Util 1.74 (c) 1995-2001 Graham Barr (c) 2002-2005 Mark Overmeer
@@ -688,6 +702,9 @@ sub _is_a_perl_release {
 
     return $perl =~ /^perl-?\d\.\d/;
 }
+
+# need a true value
+1;
 
 __END__
 

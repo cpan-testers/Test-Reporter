@@ -3,7 +3,7 @@ use warnings;
 package Test::Reporter::Transport::Mail::Send;
 use base 'Test::Reporter::Transport';
 use vars qw/$VERSION/;
-$VERSION = '1.51_01';
+$VERSION = '1.51_02';
 $VERSION = eval $VERSION;
 
 use Mail::Send;

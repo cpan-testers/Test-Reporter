@@ -2,6 +2,11 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.51_02 Sun Sep  7 23:24:47 EDT 2008
+
+        - cache mail domain; shorten mail domain timeout; add 'smtp' as a 
+          hostname to check (KANE)
+
 1.51_01 Sat Sep  6 14:34:13 EDT 2008
 
         - avoid exclusive lock on tempfile for editing report 
