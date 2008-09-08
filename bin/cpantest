@@ -30,7 +30,7 @@ use vars qw(
     $Transport
 );
 
-$VERSION       = '1.51_02';
+$VERSION       = '1.52';
 ($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
 $Reporter      = Test::Reporter->new();
 %Grades        = (

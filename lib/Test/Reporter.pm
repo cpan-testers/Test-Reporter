@@ -33,7 +33,7 @@ use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
 
-$VERSION = '1.51_02';
+$VERSION = '1.52';
 
 local $^W = 1;
 
@@ -344,7 +344,9 @@ sub read {
 
     if (my ($from, $subject, $report) = $buffer =~ /^From:\s(.+)Subject:\s(.+)Report:\s(.+)$/s) {
         my ($grade, $distribution) = (split /\s/, $subject)[0,1];
-        $self->from($from) unless $self->from();
+        chomp($from);
+        chomp($subject);
+        $self->{_from} = $from;
         $self->{_subject} = $subject;
         $self->{_report} = $report;
         $self->{_grade} = lc $grade;
@@ -916,7 +918,7 @@ become wrong and you don't have Net::DNS installed.
 
 This constructor returns a Test::Reporter object. It will optionally accept
 named parameters for: mx, address, grade, distribution, from, comments,
-via, timeout, debug, dir, perl_version, and transport.
+via, timeout, debug, dir, perl_version, transport and transport_args.
 
 =item * B<perl_version>
 

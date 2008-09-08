@@ -5,7 +5,7 @@ use FileHandle;
 use Test;
 use Test::Reporter;
 
-BEGIN { plan tests => 124 }
+BEGIN { plan tests => 127 }
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
@@ -106,11 +106,16 @@ $reporter = Test::Reporter->new
 (
     grade => 'pass',
     distribution => $distro,
+    from => 'johndoe@example.net',
 );
 ok(ref $reporter, 'Test::Reporter');
 my $file = $reporter->write();
 ok($file =~ /Test-Reporter/);
 ok(-e $file);
+
+my $orig_subject = $reporter->subject;
+my $orig_from = $reporter->from;
+my $orig_report = $reporter->report;
 
 undef $reporter;
 
@@ -123,6 +128,11 @@ ok($reporter->report =~ /This distribution has been tested/);
 ok($reporter->report =~ /Summary of my/);
 ok($reporter->grade, 'pass');
 ok($reporter->distribution, $distro);
+
+# confirm roundtrip -- particularly newlines
+ok($reporter->subject eq $orig_subject);
+ok($reporter->from eq $orig_from);
+ok($reporter->report eq $orig_report);
 
 unlink $file;
 
