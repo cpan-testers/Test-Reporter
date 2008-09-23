@@ -3,7 +3,7 @@ use warnings;
 package Test::Reporter::Transport::Net::SMTP;
 use base 'Test::Reporter::Transport';
 use vars qw/$VERSION/;
-$VERSION = '1.52';
+$VERSION = '1.5201';
 $VERSION = eval $VERSION;
 
 sub new {
