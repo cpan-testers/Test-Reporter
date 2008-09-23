@@ -2,6 +2,11 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.5201 Tue Sep 23 11:18:34 EDT 2008
+
+        - all tests now use Test::More (not Test) for better diagnostics
+        - removed unused signature test
+
 1.52 Mon Sep  8 11:45:12 EDT 2008
 
         - fixed extraneous-newlines bug in reading reports saved to a file

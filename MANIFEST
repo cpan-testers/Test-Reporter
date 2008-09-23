@@ -13,7 +13,6 @@ Makefile.PL
 MANIFEST
 MANIFEST.SKIP
 README
-t/0-signature.t
 t/1-reporter.t
 t/2-http-transport.t
 t/3-file-transport.t
