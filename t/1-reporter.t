@@ -2,30 +2,30 @@
 
 use strict;
 use FileHandle;
-use Test;
+use Test::More;
 use Test::Reporter;
 
-BEGIN { plan tests => 127 }
+plan tests => 129;
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 
 my $reporter = Test::Reporter->new();
-ok(ref $reporter, 'Test::Reporter');
+isa_ok($reporter, 'Test::Reporter');
 
 $reporter->grade('pass');
 $reporter->distribution('Mail-Freshmeat-1.20');
 
-ok($reporter->subject =~ /^PASS Mail-Freshmeat-1.20\s/);
-ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Summary of my/);
-ok($reporter->grade, 'pass');
-ok($reporter->distribution, 'Mail-Freshmeat-1.20');
-ok($reporter->timeout, 120);
+like($reporter->subject, '/^PASS Mail-Freshmeat-1.20\s/');
+like($reporter->report, '/This distribution has been tested/');
+like($reporter->report, '/Summary of my/');
+is($reporter->grade, 'pass');
+is($reporter->distribution, 'Mail-Freshmeat-1.20');
+is($reporter->timeout, 120);
 
 undef $reporter;
 
 $reporter = Test::Reporter->new();
-ok(ref $reporter, 'Test::Reporter');
+isa_ok($reporter, 'Test::Reporter');
 
 $reporter->grade('fail');
 $reporter->distribution('Foo-Bar-1.50');
@@ -36,36 +36,36 @@ $reporter->from('foo@bar.com');
 $reporter->address('send@reports.here');
 $reporter->mx([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-ok($reporter->subject =~ /^FAIL Foo-Bar-1.50\s/);
-ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Summary of my/);
-ok($reporter->report =~ /blah/);
-ok($reporter->grade, 'fail');
-ok($reporter->distribution, 'Foo-Bar-1.50');
-ok($reporter->timeout, 60);
-ok($reporter->comments, 'blah');
-ok($reporter->via, 'CPANPLUS');
-ok($reporter->from, 'foo@bar.com');
-ok($reporter->address, 'send@reports.here');
-ok($reporter->debug, 0);
-ok(scalar @{$reporter->mx}, 9);
+like($reporter->subject, '/^FAIL Foo-Bar-1.50\s/');
+like($reporter->report, '/This distribution has been tested/');
+like($reporter->report, '/Summary of my/');
+like($reporter->report, '/blah/');
+is($reporter->grade, 'fail');
+is($reporter->distribution, 'Foo-Bar-1.50');
+is($reporter->timeout, 60);
+is($reporter->comments, 'blah');
+is($reporter->via, 'CPANPLUS');
+is($reporter->from, 'foo@bar.com');
+is($reporter->address, 'send@reports.here');
+is($reporter->debug, 0);
+is(scalar @{$reporter->mx}, 9);
 
 undef $reporter;
 
 $reporter = Test::Reporter->new();
-ok(ref $reporter, 'Test::Reporter');
+isa_ok($reporter, 'Test::Reporter');
 
 $reporter->grade('na');
-ok($reporter->grade, 'na');
-ok($reporter->timeout, 120);
+is($reporter->grade, 'na');
+is($reporter->timeout, 120);
 
 undef $reporter;
 
 $reporter = Test::Reporter->new();
-ok(ref $reporter, 'Test::Reporter');
+isa_ok($reporter, 'Test::Reporter');
 
 $reporter->grade('unknown');
-ok($reporter->grade, 'unknown');
+is($reporter->grade, 'unknown');
 
 undef $reporter;
 
@@ -82,21 +82,21 @@ $reporter = Test::Reporter->new
     debug => 0,
     dir => '/tmp',
 );
-ok(ref $reporter, 'Test::Reporter');
-ok($reporter->subject =~ /^PASS Bar-1.0\s/);
-ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Summary of my/);
-ok($reporter->report =~ /woo/);
-ok($reporter->grade, 'pass');
-ok($reporter->distribution, 'Bar-1.0');
-ok($reporter->timeout, 500);
-ok($reporter->comments, 'woo');
-ok($reporter->via, 'something');
-ok($reporter->from, 'me@me.com');
-ok($reporter->address, 'foo@bar');
-ok($reporter->debug, 0);
-ok(scalar @{$reporter->mx}, 5);
-ok($reporter->dir, '/tmp');
+isa_ok($reporter, 'Test::Reporter');
+like($reporter->subject, '/^PASS Bar-1.0\s/');
+like($reporter->report, '/This distribution has been tested/');
+like($reporter->report, '/Summary of my/');
+like($reporter->report, '/woo/');
+is($reporter->grade, 'pass');
+is($reporter->distribution, 'Bar-1.0');
+is($reporter->timeout, 500);
+is($reporter->comments, 'woo');
+is($reporter->via, 'something');
+is($reporter->from, 'me@me.com');
+is($reporter->address, 'foo@bar');
+is($reporter->debug, 0);
+is(scalar @{$reporter->mx}, 5);
+is($reporter->dir, '/tmp');
 
 # ---
 
@@ -108,9 +108,9 @@ $reporter = Test::Reporter->new
     distribution => $distro,
     from => 'johndoe@example.net',
 );
-ok(ref $reporter, 'Test::Reporter');
+isa_ok($reporter, 'Test::Reporter');
 my $file = $reporter->write();
-ok($file =~ /Test-Reporter/);
+like($file, '/Test-Reporter/');
 ok(-e $file);
 
 my $orig_subject = $reporter->subject;
@@ -122,17 +122,17 @@ undef $reporter;
 $reporter = Test::Reporter->new
 (
 )->read($file);
-ok(ref $reporter, 'Test::Reporter');
-ok($reporter->subject =~ /^PASS $distro\s/);
-ok($reporter->report =~ /This distribution has been tested/);
-ok($reporter->report =~ /Summary of my/);
-ok($reporter->grade, 'pass');
-ok($reporter->distribution, $distro);
+isa_ok($reporter, 'Test::Reporter');
+like($reporter->subject,"/^PASS $distro\\s/");
+like($reporter->report, '/This distribution has been tested/');
+like($reporter->report,'/Summary of my/');
+is($reporter->grade, 'pass');
+is($reporter->distribution, $distro);
 
 # confirm roundtrip -- particularly newlines
-ok($reporter->subject eq $orig_subject);
-ok($reporter->from eq $orig_from);
-ok($reporter->report eq $orig_report);
+is($reporter->subject, $orig_subject);
+is($reporter->from, $orig_from);
+is($reporter->report, $orig_report);
 
 unlink $file;
 
@@ -141,7 +141,7 @@ my $alt_perl = 'alt_perl.pl';
 my $no_version = $reporter->perl_version;
 my $same_version = $reporter->perl_version($^X);
 for my $field ( qw( _archname _osvers _myconfig) )
-  { ok( $no_version->{$field} eq $same_version->{$field}); }
+  { is( $no_version->{$field}, $same_version->{$field}); }
 
 # testing perl-version with a fake perl
 # create fake perl
@@ -153,9 +153,9 @@ for my $field ( qw( _archname _osvers _myconfig) )
     close $fh;
 
     my $alt_perl_version = $reporter->perl_version("$^X $alt_perl");
-    ok( $reporter->perl_version->{_archname} eq 'new_archname');
-    ok( $reporter->perl_version->{_osvers} eq 'new_osvers');
-    ok( $reporter->perl_version->{_myconfig} =~ m/^new_myconfig\n\(several lines\)/s); # VMS has trailing CRLF
+    is( $reporter->perl_version->{_archname}, 'new_archname');
+    is( $reporter->perl_version->{_osvers}, 'new_osvers');
+    like( $reporter->perl_version->{_myconfig}, '/^new_myconfig\n\(several lines\)/s'); # VMS has trailing CRLF
 
     1 while (unlink $alt_perl);
 }
@@ -169,7 +169,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
     close $fh;
 
     eval { $reporter->perl_version( "$^X $alt_perl"); };
-    ok($@=~ q{^Test::Reporter: cannot get perl version info from});
+    like($@, q{/^Test::Reporter: cannot get perl version info from/});
     1 while (unlink $alt_perl);
 }
 
@@ -228,28 +228,30 @@ ok(not $reporter->_is_a_perl_release('Perl-Tidy-20060719'));
 ok(not $reporter->_is_a_perl_release('Perl-Squish-0.02'));
 ok(not $reporter->_is_a_perl_release('Perl-Visualize-1.02'));
 
-ok($reporter->message_id =~ /^<\d+\.[^.]+\.\d+@[^>]+>$/);
+like($reporter->message_id, '/^<\d+\.[^.]+\.\d+@[^>]+>$/');
 
 undef $reporter;
 
 $reporter = Test::Reporter->new();
+isa_ok($reporter, 'Test::Reporter');
 
-ok($reporter->transport() eq 'Net::SMTP');
-ok($reporter->{_transport} eq 'Net::SMTP');
+is($reporter->transport(), 'Net::SMTP');
+is($reporter->{_transport}, 'Net::SMTP');
 
 undef $reporter;
 $reporter = Test::Reporter->new();
-ok($reporter->transport('Net::SMTP') eq 'Net::SMTP');
-ok($reporter->{_transport} eq 'Net::SMTP');
+isa_ok($reporter, 'Test::Reporter');
+is($reporter->transport('Net::SMTP'), 'Net::SMTP');
+is($reporter->{_transport}, 'Net::SMTP');
 
 # Arguments stored in _tls
 $reporter->transport('Net::SMTP', Username => 'LarryW', Password => 'JAPH');
 my %tls_args = $reporter->transport_args();
-ok( $tls_args{Username} eq 'LarryW' );
-ok( $tls_args{Password} eq 'JAPH' );
+is( $tls_args{Username}, 'LarryW' );
+is( $tls_args{Password}, 'JAPH' );
 
 eval { $reporter->transport('Invalid'); };
-ok($@ =~ q{could not load 'Test::Reporter::Transport::Invalid'})
+like($@, q{/could not load 'Test::Reporter::Transport::Invalid'/})
     or print "# $@\n";
 
 {
@@ -257,8 +259,8 @@ ok($@ =~ q{could not load 'Test::Reporter::Transport::Invalid'})
     local $INC{"Mail/Send.pm"} = 1; # pretend we have Mail::Send
     my @xport_args = ('foo', 'bar', 'baz', 'wibble', 'plink!');
     my $xport_args = \@xport_args;
-    ok($reporter->transport('Mail::Send', $xport_args) eq 'Mail::Send');
-    ok( join(" ", $reporter->transport_args) eq 
+    is($reporter->transport('Mail::Send', $xport_args), 'Mail::Send');
+    is( join(" ", $reporter->transport_args), 
         join(" ", @xport_args)
     );
 }
@@ -266,6 +268,6 @@ ok($@ =~ q{could not load 'Test::Reporter::Transport::Invalid'})
 undef $reporter;
 
 $reporter = Test::Reporter->new(transport => 'Net::SMTP');
-ok(ref $reporter eq 'Test::Reporter');
-ok($reporter->transport eq 'Net::SMTP');
-ok($reporter->{_transport} eq 'Net::SMTP');
+isa_ok($reporter, 'Test::Reporter');
+is($reporter->transport, 'Net::SMTP');
+is($reporter->{_transport}, 'Net::SMTP');

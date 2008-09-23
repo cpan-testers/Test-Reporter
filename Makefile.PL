@@ -14,7 +14,6 @@ WriteMakefile(
     'NAME' => 'Test::Reporter',
     'PREREQ_PM' => {
         'Test::More' => 0.47,
-        'Test'      => 0,
         'Net::SMTP' => 0,
         'File::Temp' => 0,
         'File::Spec' => 0,
