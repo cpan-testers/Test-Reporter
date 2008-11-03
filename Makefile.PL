@@ -1,13 +1,14 @@
 use ExtUtils::MakeMaker;
 
-my $extra_meta = <<EOF;
-resources:
-    license: http://dev.perl.org/licenses/
-    homepage: http://code.google.com/p/test-reporter/
-    bugtracker: http://code.google.com/p/test-reporter/issues/list
-    Repository: http://echo.dagolden.com/git/?p=Test-Reporter
-    MailingList: http://groups.google.com/group/test-reporter
-EOF
+my $extra_meta = {
+  resources => {
+    license => "http://dev.perl.org/licenses/",
+    homepage => "http://code.google.com/p/test-reporter/",
+    bugtracker => "http://code.google.com/p/test-reporter/issues/list",
+    Repository => "http://echo.dagolden.com/git/?p=Test-Reporter",
+    MailingList =>  "http://groups.google.com/group/test-reporter",
+  }
+};
 
 WriteMakefile(
 #    (MM->can('signature_target') ? (SIGN => 1) : ()),
@@ -34,5 +35,5 @@ WriteMakefile(
         'FILES' => '*.rpt',
     },
     ($ExtUtils::MakeMaker::VERSION >= 6.31 ? (LICENSE => 'perl') : ()),
-    ($ExtUtils::MakeMaker::VERSION >= 6.36 ? (EXTRA_META => $extra_meta) : ()),
+    ($ExtUtils::MakeMaker::VERSION >= 6.46 ? (META_MERGE => $extra_meta) : ()),
 );
