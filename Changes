@@ -2,6 +2,9 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.5202
+
+
 1.5201 Tue Sep 23 11:18:34 EDT 2008
 
         - all tests now use Test::More (not Test) for better diagnostics
