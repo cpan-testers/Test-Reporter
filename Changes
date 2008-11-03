@@ -2,8 +2,10 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
-1.5202
+1.5202 Mon Nov  3 11:48:44 EST 2008
 
+        - fixed bug in Mail::Send transport 
+          (GoogleCode issue 19; patch by Moshe Kamensky)
 
 1.5201 Tue Sep 23 11:18:34 EDT 2008
 
