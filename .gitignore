@@ -7,3 +7,4 @@ pm_to_blib
 PM_to_blib
 MANIFEST.bak
 cover_db/*
+*.patch
