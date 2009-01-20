@@ -2,6 +2,11 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at 
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
 
+1.5203 Tue Jan 20 15:25:07 EST 2009
+
+        - updates CPAN Testers urls to www.cpantesters.org
+          (David Westbrook)
+
 1.5202 Mon Nov  3 11:48:44 EST 2008
 
         - fixed bug in Mail::Send transport 
