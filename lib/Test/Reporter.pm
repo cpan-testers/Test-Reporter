@@ -156,7 +156,7 @@ sub report {
     my $report;
     $report .= "This distribution has been tested as part of the cpan-testers\n";
     $report .= "effort to test as many new uploads to CPAN as possible.  See\n";
-    $report .= "http://testers.cpan.org/\n\n";
+    $report .= "http://www.cpantesters.org/\n\n";
 
     if (not $self->{_comments}) {
         $report .= "\n\n--\n\n";
@@ -753,13 +753,9 @@ further information visit the below links:
 
 =over 4
 
-=item * L<http://cpantesters.perl.org/>
+=item * L<http://www.cpantesters.org/>
 
 CPAN Testers reports (new site)
-
-=item * L<http://testers.cpan.org/>
-
-CPAN Testers reports (old site)
 
 =item * L<http://cpantest.grango.org/>
 

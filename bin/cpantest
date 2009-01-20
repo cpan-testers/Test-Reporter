@@ -283,7 +283,7 @@ B<cpantest> - Report test results of a package retrieved from CPAN
 =head1 DESCRIPTION
 
 B<cpantest> uniformly posts package test results in support of the
-cpan-testers project.  See B<http://testers.cpan.org/> for details.
+cpan-testers project.  See B<http://www.cpantesters.org/> for details.
 
 =head1 USAGE
 
