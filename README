@@ -36,13 +36,9 @@ DESCRIPTION
     CPAN Testers. Test::Reporter has wide support for various perl5's and
     platforms. For further information visit the below links:
 
-    *   <http://cpantesters.perl.org/>
+    *   <http://www.cpantesters.org/>
 
         CPAN Testers reports (new site)
-
-    *   <http://testers.cpan.org/>
-
-        CPAN Testers reports (old site)
 
     *   <http://cpantest.grango.org/>
 
@@ -191,7 +187,8 @@ METHODS
 
         This constructor returns a Test::Reporter object. It will optionally
         accept named parameters for: mx, address, grade, distribution, from,
-        comments, via, timeout, debug, dir, perl_version, and transport.
+        comments, via, timeout, debug, dir, perl_version, transport and
+        transport_args.
 
     *   perl_version
 
