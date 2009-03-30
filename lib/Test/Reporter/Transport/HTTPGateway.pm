@@ -3,7 +3,7 @@ use warnings;
 package Test::Reporter::Transport::HTTPGateway;
 use base 'Test::Reporter::Transport';
 use vars qw/$VERSION/;
-$VERSION = '1.5203';
+$VERSION = '1.53_01';
 $VERSION = eval $VERSION;
 
 use LWP::UserAgent;
