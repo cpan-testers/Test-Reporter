@@ -4,17 +4,19 @@ use strict;
 use FileHandle;
 use Test::More;
 use Test::Reporter;
+use Data::Dumper;
 
 plan tests => 129;
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
+my $distfile = "AUTHOR/" . $distro . ".tar.gz";
 
 my $reporter = Test::Reporter->new();
 isa_ok($reporter, 'Test::Reporter');
 
 $reporter->grade('pass');
 $reporter->distribution('Mail-Freshmeat-1.20');
-
+$reporter->distfile('ASPIERS/Mail-Freshmeat-1.20.tar.gz');
 like($reporter->subject, '/^PASS Mail-Freshmeat-1.20\s/');
 like($reporter->report, '/This distribution has been tested/');
 like($reporter->report, '/Summary of my/');
@@ -29,6 +31,7 @@ isa_ok($reporter, 'Test::Reporter');
 
 $reporter->grade('fail');
 $reporter->distribution('Foo-Bar-1.50');
+$reporter->distfile('ASPIERS/Mail-Freshmeat-1.20.tar.gz');
 $reporter->comments('blah');
 $reporter->timeout(60);
 $reporter->via('CPANPLUS');
@@ -106,6 +109,7 @@ $reporter = Test::Reporter->new
 (
     grade => 'pass',
     distribution => $distro,
+    distfile => $distfile,
     from => 'johndoe@example.net',
 );
 isa_ok($reporter, 'Test::Reporter');

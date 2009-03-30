@@ -45,6 +45,7 @@ sub new {
         '_address'           => 'cpan-testers@perl.org',
         '_grade'             => undef,
         '_distribution'      => undef,
+        '_distfile'          => undef,
         '_report'            => undef,
         '_subject'           => undef,
         '_from'              => undef,
@@ -70,7 +71,7 @@ sub new {
 
     $self->{_attr} = {   
         map {$_ => 1} qw(   
-            _address _distribution _comments _errstr _via _timeout _debug _dir
+            _address _distribution _distfile _comments _errstr _via _timeout _debug _dir
         )
     };
 
@@ -118,7 +119,7 @@ sub _process_params {
 
     my %params   = @_;
     my @defaults = qw(
-        mx address grade distribution from comments via timeout debug dir perl_version transport_args transport );
+        mx address grade distribution distfile from comments via timeout debug dir perl_version transport_args transport );
     my %defaults = map {$_ => 1} @defaults;
 
     for my $param (keys %params) {   

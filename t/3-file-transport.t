@@ -21,6 +21,7 @@ ok(ref $reporter, 'Test::Reporter');
 
 $reporter->grade('pass');
 $reporter->distribution('Mail-Freshmeat-1.20');
+$reporter->distfile('ASPIERS/Mail-Freshmeat-1.20.tar.gz');
 $reporter->from($from);
 
 my $form = {
