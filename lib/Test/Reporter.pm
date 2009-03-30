@@ -45,7 +45,8 @@ sub new {
         '_address'           => 'cpan-testers@perl.org',
         '_grade'             => undef,
         '_distribution'      => undef,
-        '_distfile'          => undef,
+        # XXX distfile => undef would break old clients :-( -- dagolden, 2009-03-30 
+        '_distfile'          => '', 
         '_report'            => undef,
         '_subject'           => undef,
         '_from'              => undef,
