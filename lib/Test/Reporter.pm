@@ -157,9 +157,10 @@ sub report {
     return $self->{_report} if $self->{_report_lock};
 
     my $report;
-    $report .= "This distribution has been tested as part of the cpan-testers\n";
+    $report .= "This distribution has been tested as part of the CPAN Testers\n";
     $report .= "effort to test as many new uploads to CPAN as possible.  See\n";
-    $report .= "http://www.cpantesters.org/\n\n";
+    $report .= "http://wiki.cpantesters.org/ for more information or email\n"; 
+    $report .= "questions to cpan-testers-discuss\@perl.org\n\n";
 
     if (not $self->{_comments}) {
         $report .= "\n\n--\n\n";
@@ -549,7 +550,7 @@ sub _start_editor {
 
     $editor = $self->_prompt('Editor', $editor);
 
-    die __PACKAGE__, ": The editor `$editor' could not be run" if system "$editor $Report";
+    die __PACKAGE__, ": The editor `$editor' could not be run on '$Report': $!" if system "$editor $Report";
     die __PACKAGE__, ": Report has disappeared; terminated" unless -e $Report;
     die __PACKAGE__, ": Empty report; terminated" unless -s $Report > 2;
 }
