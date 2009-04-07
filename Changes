@@ -2,10 +2,17 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
 
-1.53_01
+1.53_01 Tue Apr  7 11:01:37 EDT 2009
 
         - added optional 'distfile' argument to support
           T::R::Transport::Metabase
+
+        - reports link to the wiki rather than www.cpantesters.org;
+          also added cpan-testers-discuss as place to send Q's
+
+        - improved diagnostic output if editor fails to launch
+
+        - changed Makefile.Pl to Module::Install
 
 1.5203 Tue Jan 20 15:25:07 EST 2009
 
