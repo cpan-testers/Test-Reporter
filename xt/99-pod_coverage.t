@@ -1,6 +1,4 @@
 use Test::More;
-plan skip_all => "Skipping author tests" if not $ENV{AUTHOR_TESTING};
-
 my $min_tpc = 1.08;
 eval "use Test::Pod::Coverage $min_tpc";
 plan skip_all => "Test::Pod::Coverage $min_tpc required for testing POD coverage"
