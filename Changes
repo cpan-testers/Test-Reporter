@@ -1,10 +1,11 @@
-Revision history for Perl extension Test::Reporter. 
-For canonical change info, visit the master repository at 
-http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git 
+Revision history for Perl extension Test::Reporter.
+For canonical change info, visit the master repository at
+http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
 
 1.53_01
 
-        - added 'distfile' argument to support T::R::Transport::Metabase
+        - added optional 'distfile' argument to support
+          T::R::Transport::Metabase
 
 1.5203 Tue Jan 20 15:25:07 EST 2009
 
@@ -13,7 +14,7 @@ http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
 
 1.5202 Mon Nov  3 11:48:44 EST 2008
 
-        - fixed bug in Mail::Send transport 
+        - fixed bug in Mail::Send transport
           (GoogleCode issue 19; patch by Moshe Kamensky)
 
 1.5201 Tue Sep 23 11:18:34 EDT 2008
@@ -25,31 +26,31 @@ http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
 
         - fixed extraneous-newlines bug in reading reports saved to a file
           (Sleven Rezick)
-        
+
 1.51_02 Sun Sep  7 23:24:47 EDT 2008
 
-        - cache mail domain; shorten mail domain timeout; add 'smtp' as a 
+        - cache mail domain; shorten mail domain timeout; add 'smtp' as a
           hostname to check (KANE)
 
 1.51_01 Sat Sep  6 14:34:13 EDT 2008
 
-        - avoid exclusive lock on tempfile for editing report 
+        - avoid exclusive lock on tempfile for editing report
           (Slaven Rezick)
-        
+
 1.50 Sat Sep  6 14:04:22 EDT 2008
         - Deprecated sending reports to anywhere other than the
           cpan-testers mailing list.  This means that authors will no
-          longer be copied on report emails by individual testers. 
+          longer be copied on report emails by individual testers.
           (CPAN Testers is switching to an opt-in philosophy with central
           author notifications.)
 
         - doc fix on usage of read() in Test::Reporter::Transport::File
-      
+
 1.4002 Wed Jun 25 17:21:10 EDT 2008
         - fixed bug in error handling when using TLS transport
 
 1.4001 Wed May 21 12:34:28 EDT 2008
-        - fixed bug where send() would crash when no explicit transport 
+        - fixed bug where send() would crash when no explicit transport
           was set.
 
 1.40 Sun May 18 14:54:46 EDT 2008
@@ -75,7 +76,7 @@ http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
         - Whoops!  Devel versions are supposed to be odd
         - t/2-http-transport.t left out of MANIFEST
         - Copyright notice updates
- 
+
 1.38_01 Sat Apr  5 18:00:00 EDT 2008
         - Add support for 'HTTP' transport to a Test::Reporter::HTTPGateway
           server
