@@ -18,8 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 package Test::Reporter;
-
+use 5.005;
 use strict;
+BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 use Cwd;
 use Config;
 use Carp;
