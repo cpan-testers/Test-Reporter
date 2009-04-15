@@ -49,6 +49,89 @@ sub _format_date {
       $day, $mday, $month, $year, $hour, $min, $sec, $direc, $tz_hr, $tz_mi;
 }
 
+# Taken with slight modifications from MIME::QuotedPrint::Perl 1.00 by Gisle Aas
+sub _encode_qp_perl {
+    my ($res,$eol) = @_;
+    $eol = "\n" unless defined $eol;
+
+    if (ord('A') == 193) { # on EBCDIC machines we need translation help
+      require Encode;
+    }
+
+    my $RE_Z = "\\z";
+    $RE_Z = "\$" if $] < 5.005;
+
+    if ($] >= 5.006) {
+        require bytes;
+        if (bytes::length($res) > length($res) ||
+            ($] >= 5.008 && $res =~ /[^\0-\xFF]/))
+        {
+            require Carp;
+            Carp::croak("The Quoted-Printable encoding is only defined for bytes");
+        }
+    }
+
+    # Do not mention ranges such as $res =~ s/([^ \t\n!-<>-~])/sprintf("=%02X", ord($1))/eg;
+    # since that will not even compile on an EBCDIC machine (where ord('!') > ord('<')).
+    if (ord('A') == 193) { # EBCDIC style machine
+        if (ord('[') == 173) {
+            $res =~ s/([^ \t\n!"#\$%&'()*+,\-.\/0-9:;<>?\@A-Z[\\\]^_`a-z{|}~])/sprintf("=%02X", ord(Encode::encode('iso-8859-1',Encode::decode('cp1047',$1))))/eg;  # rule #2,#3
+            $res =~ s/([ \t]+)$/
+              join('', map { sprintf("=%02X", ord(Encode::encode('iso-8859-1',Encode::decode('cp1047',$_)))) }
+                           split('', $1)
+              )/egm;                        # rule #3 (encode whitespace at eol)
+        }
+        elsif (ord('[') == 187) {
+            $res =~ s/([^ \t\n!"#\$%&'()*+,\-.\/0-9:;<>?\@A-Z[\\\]^_`a-z{|}~])/sprintf("=%02X", ord(Encode::encode('iso-8859-1',Encode::decode('posix-bc',$1))))/eg;  # rule #2,#3
+            $res =~ s/([ \t]+)$/
+              join('', map { sprintf("=%02X", ord(Encode::encode('iso-8859-1',Encode::decode('posix-bc',$_)))) }
+                           split('', $1)
+              )/egm;                        # rule #3 (encode whitespace at eol)
+        }
+        elsif (ord('[') == 186) {
+            $res =~ s/([^ \t\n!"#\$%&'()*+,\-.\/0-9:;<>?\@A-Z[\\\]^_`a-z{|}~])/sprintf("=%02X", ord(Encode::encode('iso-8859-1',Encode::decode('cp37',$1))))/eg;  # rule #2,#3
+            $res =~ s/([ \t]+)$/
+              join('', map { sprintf("=%02X", ord(Encode::encode('iso-8859-1',Encode::decode('cp37',$_)))) }
+                           split('', $1)
+              )/egm;                        # rule #3 (encode whitespace at eol)
+        }
+    }
+    else { # ASCII style machine
+        $res =~  s/([^ \t\n!"#\$%&'()*+,\-.\/0-9:;<>?\@A-Z[\\\]^_`a-z{|}~])/sprintf("=%02X", ord($1))/eg;  # rule #2,#3
+        $res =~ s/\n/=0A/g unless length($eol);
+        $res =~ s/([ \t]+)$/
+          join('', map { sprintf("=%02X", ord($_)) }
+                   split('', $1)
+          )/egm;                        # rule #3 (encode whitespace at eol)
+    }
+
+    return $res unless length($eol);
+
+    # rule #5 (lines must be shorter than 76 chars, but we are not allowed
+    # to break =XX escapes.  This makes things complicated :-( )
+    my $brokenlines = "";
+    $brokenlines .= "$1=$eol"
+        while $res =~ s/(.*?^[^\n]{73} (?:
+                 [^=\n]{2} (?! [^=\n]{0,1} $) # 75 not followed by .?\n
+                |[^=\n]    (?! [^=\n]{0,2} $) # 74 not followed by .?.?\n
+                |          (?! [^=\n]{0,3} $) # 73 not followed by .?.?.?\n
+            ))//xsm;
+    $res =~ s/\n$RE_Z/$eol/o;
+
+    "$brokenlines$res";
+}
+
+sub _encode_qp {
+    my $text = shift;
+    if ( $] >= 5.007003 ) {
+        require MIME::QuotedPrint;
+        return MIME::QuotedPrint::encode_qp($text);
+    }
+    else {
+      return _encode_qp_perl($text);
+    }
+}
+
 sub send {
     my ($self, $report, $recipients) = @_;
     $recipients ||= [];
@@ -112,6 +195,11 @@ sub send {
     my $envelope_sender = $from;
     $envelope_sender =~ s/\s\([^)]+\)$//; # email only; no name
 
+    # wrap as quoted-printable if we have lines longer than 100 characters
+    my $body = $report->report;
+    my $needs_qp = $body =~ /^.{100}/m;
+    $body = _encode_qp($body) if $needs_qp;
+
     # Net::SMTP returns 1 or undef for pass/fail 
     # Net::SMTP::TLS croaks on fail but may not return 1 on pass
     # so this closure lets us die on an undef return only for Net::SMTP
@@ -129,8 +217,13 @@ sub send {
         if ( @$recipients ) { $smtp->datasend("Cc: $cc_str\n") or $die->() };
         $smtp->datasend("Message-ID: ", $report->message_id(), "\n") or $die->();
         $smtp->datasend("X-Reported-Via: Test::Reporter $Test::Reporter::VERSION$via\n") or $die->();
+        if ( $needs_qp ) {
+            $smtp->datasend("MIME-Version: 1.0\n");
+            $smtp->datasend("Content-Type: text/plain; charset=utf-8\n");
+            $smtp->datasend("Content-Transfer-Encoding: quoted-printable\n");
+        }
         $smtp->datasend("\n") or $die->();
-        $smtp->datasend($report->report()) or $die->();
+        $smtp->datasend($body) or $die->();
         $smtp->dataend() or $die->();
         $smtp->quit or $die->();
         1;
