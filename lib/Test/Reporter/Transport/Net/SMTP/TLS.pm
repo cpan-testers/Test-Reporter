@@ -3,7 +3,7 @@ BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package Test::Reporter::Transport::Net::SMTP::TLS;
 use base 'Test::Reporter::Transport::Net::SMTP';
 use vars qw/$VERSION/;
-$VERSION = '1.53_01';
+$VERSION = '1.53_02';
 $VERSION = eval $VERSION;
 
 use Net::SMTP::TLS;

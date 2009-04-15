@@ -2,6 +2,11 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
 
+1.53_02 Wed Apr 15 13:30:53 EDT 2009
+
+        - with Net::SMTP transport, if lines are longer than 100
+          characters, the email will be encoded with quoted-printable
+
 1.53_01 Tue Apr  7 11:01:37 EDT 2009
 
         - added optional 'distfile' argument to support
