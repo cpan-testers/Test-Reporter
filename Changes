@@ -2,6 +2,10 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
 
+1.53_03
+
+        - Transmit report body line-by-line with Net::SMTP (or Net::SMTP::TLS)
+
 1.53_02 Wed Apr 15 13:30:53 EDT 2009
 
         - with Net::SMTP transport, if lines are longer than 100
