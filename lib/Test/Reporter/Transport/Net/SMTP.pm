@@ -199,6 +199,7 @@ sub send {
     my $body = $report->report;
     my $needs_qp = $body =~ /^.{100}/m;
     $body = _encode_qp($body) if $needs_qp;
+    my @body = split /\n/, $body;
 
     # Net::SMTP returns 1 or undef for pass/fail 
     # Net::SMTP::TLS croaks on fail but may not return 1 on pass
@@ -223,7 +224,9 @@ sub send {
             $smtp->datasend("Content-Transfer-Encoding: quoted-printable\n");
         }
         $smtp->datasend("\n") or $die->();
-        $smtp->datasend($body) or $die->();
+        for my $b ( @body ) {
+          $smtp->datasend("$b\n") or $die->();
+        }
         $smtp->dataend() or $die->();
         $smtp->quit or $die->();
         1;
