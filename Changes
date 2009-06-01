@@ -2,6 +2,11 @@ Revision history for Perl extension Test::Reporter.
 For canonical change info, visit the master repository at
 http://eclipse.resort.org/git/gitweb.cgi?p=test-reporter.git
 
+1.54 Sun May 31 21:39:12 EDT 2009
+
+        - POD updates
+        - Update Module::Install to 0.91
+
 1.53_03 Thu Apr 16 12:30:49 EDT 2009
 
         - Transmit report body line-by-line with Net::SMTP (or Net::SMTP::TLS)
