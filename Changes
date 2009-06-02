@@ -15,16 +15,16 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.53_02 Wed Apr 15 13:30:53 EDT 2009
 
-        - With Net::SMTP transport, if lines are longer than 100
-          characters, the email will be encoded with quoted-printable.
+        - With Net::SMTP transport, if lines are longer than 100 characters,
+          the email will be encoded with quoted-printable.
 
 1.53_01 Tue Apr  7 11:01:37 EDT 2009
 
         - Added optional 'distfile' argument to support
           T::R::Transport::Metabase.
 
-        - Reports link to the wiki rather than www.cpantesters.org;
-          also added cpan-testers-discuss as place to send Q's.
+        - Reports link to the wiki rather than www.cpantesters.org; also added
+          cpan-testers-discuss as place to send Q's.
 
         - Improved diagnostic output if editor fails to launch.
 
@@ -32,13 +32,12 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.5203 Tue Jan 20 15:25:07 EST 2009
 
-        - Updates CPAN Testers urls to www.cpantesters.org
-          (David Westbrook).
+        - Updates CPAN Testers urls to www.cpantesters.org (David Westbrook).
 
 1.5202 Mon Nov  3 11:48:44 EST 2008
 
-        - Fixed bug in Mail::Send transport
-          (GoogleCode issue 19; patch by Moshe Kamensky).
+        - Fixed bug in Mail::Send transport (GoogleCode issue 19; patch by
+          Moshe Kamensky).
 
 1.5201 Tue Sep 23 11:18:34 EDT 2008
 
@@ -58,16 +57,14 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.51_01 Sat Sep  6 14:34:13 EDT 2008
 
-        - Avoid exclusive lock on tempfile for editing report
-          (Slaven Rezick).
+        - Avoid exclusive lock on tempfile for editing report (Slaven Rezick).
 
 1.50 Sat Sep  6 14:04:22 EDT 2008
 
-        - Deprecated sending reports to anywhere other than the
-          cpan-testers mailing list.  This means that authors will no
-          longer be copied on report emails by individual testers.
-          (CPAN Testers is switching to an opt-in philosophy with central
-          author notifications.).
+        - Deprecated sending reports to anywhere other than the cpan-testers
+          mailing list.  This means that authors will no longer be copied on
+          report emails by individual testers. (CPAN Testers is switching to
+          an opt-in philosophy with central author notifications).
 
         - Doc fix on usage of read() in Test::Reporter::Transport::File.
 
@@ -77,8 +74,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.4001 Wed May 21 12:34:28 EDT 2008
 
-        - Fixed bug where send() would crash when no explicit transport
-          was set.
+        - Fixed bug where send() would crash when no explicit transport was
+          set.
 
 1.40 Sun May 18 14:54:46 EDT 2008
 
@@ -90,8 +87,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.39_05 Wed Apr  9 12:43:55 EDT 2008
 
-        - Removed use of File::Temp->newdir() for backwards compatibility
-          with older versions of File::Temp.
+        - Removed use of File::Temp->newdir() for backwards compatibility with
+          older versions of File::Temp.
 
 1.39_04 Mon Apr  7 17:25:35 EDT 2008
 
@@ -107,7 +104,7 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.39_01 Sun Apr  6 01:16:10 EDT 2008
 
-        - Whoops!  Devel versions are supposed to be odd.
+        - Whoops! Devel versions are supposed to be odd.
 
         - t/2-http-transport.t left out of MANIFEST.
 
@@ -120,8 +117,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.38 Tue Oct 09 21:00:00 EDT 2007
 
-        - Additional compatibility improvements for VMS.
-          Many thanks to Peter (Stig) Edwards!
+        - Additional compatibility improvements for VMS. Many thanks to Peter
+          (Stig) Edwards!
 
 1.36 Mon Oct 08 21:00:00 EDT 2007
 
@@ -133,9 +130,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.34 Sun Aug 12 23:00:00 EDT 2007
 
-        - It is now possible to override the automatic selection of a
-          transport by making use of the transport() method (per WYANT and
-          ANDK).
+        - It is now possible to override the automatic selection of a transport
+          by making use of the transport() method (per WYANT and ANDK).
 
         - A dozen new tests added to support transport().
 
@@ -191,8 +187,8 @@ http://github.com/dagolden/test-reporter/commits/master
         - Incorporated suggestion from MIROD; add documentation to describe
           what a package should look like (14376).
 
-        - Incorporated patch from SAPER; compatibility for write() under
-          5.004 (14148).
+        - Incorporated patch from SAPER; compatibility for write() under 5.004
+          (14148).
 
         - Incorporated suggestion from CLACO; updated MX for perl.org (11370).
 
@@ -282,8 +278,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
         - Better POD documentation.
 
-        - Header pass-through for X-Reported-Via, via via() -- this is useful
-          for third-party distributions, like CPANPLUS, that use Test::Reporter.
+        - Header pass-through for X-Reported-Via, via via(). This is useful for
+          third-party distributions, like CPANPLUS, that use Test::Reporter.
 
         - Added 'debug' get/set method -- this is extremely verbose and
           primarily of use for debugging Test::Reporter itself.
