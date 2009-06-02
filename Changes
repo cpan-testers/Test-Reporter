@@ -15,50 +15,50 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.53_02 Wed Apr 15 13:30:53 EDT 2009
 
-        - with Net::SMTP transport, if lines are longer than 100
+        - With Net::SMTP transport, if lines are longer than 100
           characters, the email will be encoded with quoted-printable
 
 1.53_01 Tue Apr  7 11:01:37 EDT 2009
 
-        - added optional 'distfile' argument to support
+        - Added optional 'distfile' argument to support
           T::R::Transport::Metabase
 
-        - reports link to the wiki rather than www.cpantesters.org;
+        - Reports link to the wiki rather than www.cpantesters.org;
           also added cpan-testers-discuss as place to send Q's
 
-        - improved diagnostic output if editor fails to launch
+        - Improved diagnostic output if editor fails to launch
 
-        - changed Makefile.Pl to Module::Install
+        - Changed Makefile.Pl to Module::Install
 
 1.5203 Tue Jan 20 15:25:07 EST 2009
 
-        - updates CPAN Testers urls to www.cpantesters.org
+        - Updates CPAN Testers urls to www.cpantesters.org
           (David Westbrook)
 
 1.5202 Mon Nov  3 11:48:44 EST 2008
 
-        - fixed bug in Mail::Send transport
+        - Fixed bug in Mail::Send transport
           (GoogleCode issue 19; patch by Moshe Kamensky)
 
 1.5201 Tue Sep 23 11:18:34 EDT 2008
 
-        - all tests now use Test::More (not Test) for better diagnostics
+        - All tests now use Test::More (not Test) for better diagnostics
 
-        - removed unused signature test
+        - Removed unused signature test
 
 1.52 Mon Sep  8 11:45:12 EDT 2008
 
-        - fixed extraneous-newlines bug in reading reports saved to a file
+        - Fixed extraneous-newlines bug in reading reports saved to a file
           (Sleven Rezick)
 
 1.51_02 Sun Sep  7 23:24:47 EDT 2008
 
-        - cache mail domain; shorten mail domain timeout; add 'smtp' as a
+        - Cache mail domain; shorten mail domain timeout; add 'smtp' as a
           hostname to check (KANE)
 
 1.51_01 Sat Sep  6 14:34:13 EDT 2008
 
-        - avoid exclusive lock on tempfile for editing report
+        - Avoid exclusive lock on tempfile for editing report
           (Slaven Rezick)
 
 1.50 Sat Sep  6 14:04:22 EDT 2008
@@ -69,28 +69,28 @@ http://github.com/dagolden/test-reporter/commits/master
           (CPAN Testers is switching to an opt-in philosophy with central
           author notifications.)
 
-        - doc fix on usage of read() in Test::Reporter::Transport::File
+        - Doc fix on usage of read() in Test::Reporter::Transport::File
 
 1.4002 Wed Jun 25 17:21:10 EDT 2008
 
-        - fixed bug in error handling when using TLS transport
+        - Fixed bug in error handling when using TLS transport
 
 1.4001 Wed May 21 12:34:28 EDT 2008
 
-        - fixed bug where send() would crash when no explicit transport
+        - Fixed bug where send() would crash when no explicit transport
           was set.
 
 1.40 Sun May 18 14:54:46 EDT 2008
 
-        - no change from 1.39_06
+        - No change from 1.39_06
 
 1.39_06 Thu Apr 17 06:15:45 EDT 2008
 
-        - fixed bug setting transport_args in constructor
+        - Fixed bug setting transport_args in constructor
 
 1.39_05 Wed Apr  9 12:43:55 EDT 2008
 
-        - removed use of File::Temp->newdir() for backwards compatibility
+        - Removed use of File::Temp->newdir() for backwards compatibility
           with older versions of File::Temp
 
 1.39_04 Mon Apr  7 17:25:35 EDT 2008
@@ -219,57 +219,57 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.27    Mon Jan 17 15:51:00 2005
 
-        - don't try to use Mail::Send on Windows
+        - Don't try to use Mail::Send on Windows
 
 1.26    Thu Dec 30 19:03:00 2004
 
-        - add support for a user-specified suffix in edit_comments()
+        - Add support for a user-specified suffix in edit_comments()
 
-        - add a suffix of '.txt' to the tempfile when editing comments
+        - Add a suffix of '.txt' to the tempfile when editing comments
 
-        - update changes
+        - Update changes
 
 1.25    Thu Dec 30 19:02:00 2004
 
-        - reintegrate Reporter.pod into Reporter.pm
+        - Reintegrate Reporter.pod into Reporter.pm
 
 1.24    Thu Dec 30 19:02:00 2004
 
-        - correct MAN3EXT in Makefile.PL for Reporter.pod
+        - Correct MAN3EXT in Makefile.PL for Reporter.pod
 
 1.23    Sun Dec 26 10:17:00 2004
 
-        - add cpantest -from and -dump
+        - Add cpantest -from and -dump
 
-        - update T:R->write() to accept a second argument, filehandle object
+        - Update T:R->write() to accept a second argument, filehandle object
 
         - ucfirst'd globals that were lowercase
 
-        - fix pod man3 extension
+        - Fix pod man3 extension
 
-        - make tests autodetect release version
+        - Make tests autodetect release version
 
 1.22    Sun Dec 26 09:23:00 2004
 
-        - restructured mx, recipient filter logic
+        - Restructured mx, recipient filter logic
 
-        - remove commented $VERSION to fix mlc 0.06 (cpanplus <= 0.050_04)
+        - Remove commented $VERSION to fix mlc 0.06 (cpanplus <= 0.050_04)
 
 1.21    Sun Dec 26 07:57:00 2004
 
-        - fixed local hostname logic to skip /\.local$/ domains under OS X
+        - Fixed local hostname logic to skip /\.local$/ domains under OS X
 
 1.20    Wed Mar 05 04:03:07 2003
 
-        - fixed a minor bug with read()
+        - Fixed a minor bug with read()
 
 1.19    Wed Mar 05 03:03:07 2003
 
-        - added dir() -- specifies default directory to write report files to
+        - Added dir() -- specifies default directory to write report files to
 
-        - added write() -- writes a test report to disk
+        - Added write() -- writes a test report to disk
 
-        - added read() -- reads a test report from disk
+        - Added read() -- reads a test report from disk
 
         - These three methods are used in situations where you test on a
           machine that has port 25 blocked and there is no local MTA. You use
@@ -278,41 +278,41 @@ http://github.com/dagolden/test-reporter/commits/master
 
 1.16    Tue Feb 25 04:00:00 2003
 
-        - abstract now matches PAUSE meta-data for this distribution
+        - Abstract now matches PAUSE meta-data for this distribution
 
-        - better POD documentation
+        - Better POD documentation
 
-        - header pass-through for X-Reported-Via, via via() -- this is useful
+        - Header pass-through for X-Reported-Via, via via() -- this is useful
           for third-party distributions, like CPANPLUS, that use Test::Reporter
 
-        - added 'debug' get/set method -- this is extremely verbose and
+        - Added 'debug' get/set method -- this is extremely verbose and
           primarily of use for debugging Test::Reporter itself
 
-        - added 'address' get/set method -- specifies the e-mail address that
+        - Added 'address' get/set method -- specifies the e-mail address that
           the reports should be sent to -- you shouldn't need this unless the
           CPAN Tester's change the e-mail address to send report's to
 
-        - added 'from' get/set method -- specifies the e-mail address of the
+        - Added 'from' get/set method -- specifies the e-mail address of the
           individual doing the reporting -- you generally shouldn't need this
           as Test::Reporter tries very hard to guess your e-mail address
           automatically
 
-        - added 'mx' get/set method -- specifies the MX's for perl.org -- you
+        - Added 'mx' get/set method -- specifies the MX's for perl.org -- you
           really shouldn't need to use this unless the hardcoded MX's have
           become wrong and you don't have Net::DNS installed
 
-        - the constructor now takes named parameters
+        - The constructor now takes named parameters
 
-        - we now use Net::DNS to get MX's if Net::DNS is available
+        - We now use Net::DNS to get MX's if Net::DNS is available
 
-        - we now use Net::Domain to better auto-guess the reporter's email
+        - We now use Net::Domain to better auto-guess the reporter's email
           address
 
-        - we now use Mail::Send to send reports, if it's available
+        - We now use Mail::Send to send reports, if it's available
 
-        - now cycles through all available MX servers, when using Net::SMTP
+        - Now cycles through all available MX servers, when using Net::SMTP
 
-        - added bin/cpantest
+        - Added bin/cpantest
 
         - T::R now allows testers to edit the report interactively via the
           edit_comments() method
@@ -321,15 +321,15 @@ http://github.com/dagolden/test-reporter/commits/master
 
         - "can't call method "mail" on an undefined value" bug fixed
 
-        - doubled the number of tests
+        - Doubled the number of tests
 
-        - memoized certain methods
+        - Memoized certain methods
 
-        - bundling Date::Format and Time::Zone to assist in SMTP sends (for
+        - Bundling Date::Format and Time::Zone to assist in SMTP sends (for
           'Date')
 
-        - bundling an updated Mail::Util
+        - Bundling an updated Mail::Util
 
 1.13    Sun Aug 12 03:20:08 2002
 
-        - initial beta release
+        - Initial beta release
