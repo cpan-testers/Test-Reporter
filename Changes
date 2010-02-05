@@ -3,6 +3,8 @@ Revision history for Perl extension Test::Reporter.
 For the complete changelog, visit:
 http://github.com/dagolden/test-reporter/commits/master
 
+        - Regenerate _myconfig data during read() method
+
 1.54 Sun May 31 21:39:12 EDT 2009
 
         - POD updates.

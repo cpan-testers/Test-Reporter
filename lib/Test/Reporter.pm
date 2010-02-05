@@ -348,6 +348,7 @@ sub read {
 
     if (my ($from, $subject, $report) = $buffer =~ /^From:\s(.+)Subject:\s(.+)Report:\s(.+)$/s) {
         my ($grade, $distribution) = (split /\s/, $subject)[0,1];
+        my ($perlv) = $report =~ /(^Summary of my perl5.*)\z/ms;
         chomp($from);
         chomp($subject);
         $self->{_from} = $from;
@@ -357,6 +358,7 @@ sub read {
         $self->{_distribution} = $distribution;
         $self->{_subject_lock} = 1;
         $self->{_report_lock} = 1;
+        $self->{_myconfig} = $perlv if $perlv;
     } else {
         die __PACKAGE__, ": Failed to parse report file '$file'\n";
     }
