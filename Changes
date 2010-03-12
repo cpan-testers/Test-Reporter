@@ -5,6 +5,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+1.55      2010-03-12 11:44:05 EST5EDT
+
         - Preserve distfile through write() and read() 
           [patch by Dan Collins]
 
