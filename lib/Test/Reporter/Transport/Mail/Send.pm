@@ -90,32 +90,4 @@ The C<new> method is the object constructor.
 
 The C<send> method transmits the report.  
 
-=head1 AUTHOR
-
-=over
-
-=item *
-
-David A. Golden (DAGOLDEN)
-
-=item *
-
-Ricardo Signes (RJBS)
-
-=back
-
-=head1 COPYRIGHT
-
- Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
- Copyright (C) 2004, 2005 Richard Soderberg.
- Copyright (C) 2008 David A. Golden
- Copyright (C) 2008 Ricardo Signes
-
- All rights reserved.
-
-=head1 LICENSE
-
-This program is free software; you may redistribute it and/or modify it under
-the same terms as Perl itself.
-
 =cut

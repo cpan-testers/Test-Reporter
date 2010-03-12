@@ -88,31 +88,5 @@ MUST return true if the report is successfully sent.  It SHOULD die with a
 message describing the failure if a report cannot be sent.  It MUST NOT return
 a true value if the report cannot be sent.  
 
-=head1 AUTHOR
-
-=over
-
-=item *
-
-David A. Golden (DAGOLDEN)
-
-=item *
-
-Ricardo Signes (RJBS)
-
-=back
-
-=head1 COPYRIGHT
-
- Copyright (C) 2008 David A. Golden
- Copyright (C) 2008 Ricardo Signes
-
- All rights reserved.
-
-=head1 LICENSE
-
-This program is free software; you may redistribute it
-and/or modify it under the same terms as Perl itself.
-
 =cut
 

@@ -1,22 +1,3 @@
-# Test::Reporter - sends test results to cpan-testers@perl.org
-#
-# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
-# Copyright (C) 2008 David A. Golden
-# Copyright (C) 2008 Ricardo Signes
-# Copyright (C) 2004, 2005 Richard Soderberg.
-# All rights reserved.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the same terms as Perl itself.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
 package Test::Reporter;
 use 5.005;
 use strict;
@@ -1097,27 +1078,6 @@ MX's known at the time of this release.
 This is optional.  It provides a web API for the 'HTTP' transport method.
 
 =back
-
-=head1 AUTHORS
-
- Adam J. Foxson <afoxson@pobox.com>
- David Golden <dagolden@cpan.org>
- Kirrily "Skud" Robert <skud@cpan.org>
- Ricardo Signes <rjbs@cpan.org>
- Richard Soderberg <rsod@cpan.org>
- Kurt Starsinic <Kurt.Starsinic@isinet.com>
-
-=head1 COPYRIGHT
-
- Copyright (C) 2008-2009 David A. Golden.
- Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
- Copyright (C) 2004, 2005 Richard Soderberg.
- All rights reserved.
-
-=head1 LICENSE
-
-This program is free software; you may redistribute it
-and/or modify it under the same terms as Perl itself.
 
 =cut
 

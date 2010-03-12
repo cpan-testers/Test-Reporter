@@ -3,7 +3,8 @@ Revision history for Perl extension Test::Reporter.
 For the complete changelog, visit:
 http://github.com/dagolden/test-reporter/commits/master
 
-1.55
+{{$NEXT}}
+
         - Preserve distfile through write() and read() 
           [patch by Dan Collins]
 
