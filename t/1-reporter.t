@@ -6,7 +6,7 @@ use Test::More;
 use Test::Reporter;
 use Data::Dumper;
 
-plan tests => 130;
+plan tests => 131;
 
 my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
 my $distfile = "AUTHOR/" . $distro . ".tar.gz";
@@ -132,6 +132,7 @@ like($reporter->report, '/This distribution has been tested/');
 like($reporter->report,'/Summary of my/');
 is($reporter->grade, 'pass');
 is($reporter->distribution, $distro);
+is($reporter->distfile, $distfile);
 like($reporter->{_myconfig}, '/Summary of my/', "Regenerated _myconfig");
 
 # confirm roundtrip -- particularly newlines

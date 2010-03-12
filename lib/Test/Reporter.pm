@@ -88,6 +88,11 @@ sub new {
     return $self;
 }
 
+sub debug {
+    my $self = shift;
+    return $self->{_debug};
+}
+
 sub _get_mx {
     my $self = shift;
     warn __PACKAGE__, ": _get_mx\n" if $self->debug();
@@ -297,6 +302,7 @@ sub write {
     my $distribution = $self->distribution();
     my $grade = $self->grade();
     my $dir = $self->dir() || cwd;
+    my $distfile = $self->{_distfile} || '';
 
     return unless $self->_verify();
 
@@ -322,6 +328,9 @@ sub write {
         open $fh, ">$file" or die __PACKAGE__, ": Can't open report file '$file': $!";
     }
     print $fh "From: $from\n";
+    if ($distfile ne '') {
+      print $fh "X-Test-Reporter-Distfile: $distfile\n";
+    }
     print $fh "Subject: $subject\n";
     print $fh "Report: $report";
     unless ($_[0]) {
@@ -337,6 +346,9 @@ sub read {
     my ($self, $file) = @_;
     warn __PACKAGE__, ": read\n" if $self->debug();
 
+    # unlock these; if not locked later, we have a parse error
+    $self->{_report_lock} = $self->{_subject_lock} = 0;
+
     my $buffer;
 
     {
@@ -346,20 +358,36 @@ sub read {
         close REPORT or die __PACKAGE__, ": Can't close report file '$file': $!";
     }
 
-    if (my ($from, $subject, $report) = $buffer =~ /^From:\s(.+)Subject:\s(.+)Report:\s(.+)$/s) {
-        my ($grade, $distribution) = (split /\s/, $subject)[0,1];
-        my ($perlv) = $report =~ /(^Summary of my perl5.*)\z/ms;
-        chomp($from);
-        chomp($subject);
-        $self->{_from} = $from;
-        $self->{_subject} = $subject;
-        $self->{_report} = $report;
-        $self->{_grade} = lc $grade;
-        $self->{_distribution} = $distribution;
-        $self->{_subject_lock} = 1;
-        $self->{_report_lock} = 1;
-        $self->{_myconfig} = $perlv if $perlv;
-    } else {
+    # parse out headers
+    foreach my $line (split(/\n/, $buffer)) {
+      if ($line =~ /^(.+):\s(.+)$/) {
+        my ($header, $content) = ($1, $2);
+        if ($header eq "From") {
+          $self->{_from} = $content;
+        } elsif ($header eq "Subject") {
+          $self->{_subject} = $content;
+          my ($grade, $distribution) = (split /\s/, $content)[0,1];
+          $self->{_grade} = lc $grade;
+          $self->{_distribution} = $distribution;
+          $self->{_subject_lock} = 1;
+        } elsif ($header eq "X-Test-Reporter-Distfile") {
+          $self->{_distfile} = $content;
+        } elsif ($header eq "Report") {
+          last;
+        }
+      }
+    }
+
+    # parse out body
+    if ( $self->{_from} && $self->{_subject} ) {
+      ($self->{_report}) = ($buffer =~ /^.+?Report:\s(.+)$/s);
+      my ($perlv) = $self->{_report} =~ /(^Summary of my perl5.*)\z/ms;
+      $self->{_myconfig} = $perlv if $perlv;
+      $self->{_report_lock} = 1;
+    }
+
+    # check that the full report was parsed
+    if ( ! $self->{_report_lock} ) {
         die __PACKAGE__, ": Failed to parse report file '$file'\n";
     }
 
