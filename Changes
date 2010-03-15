@@ -5,6 +5,9 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+        - Convert line endings during read() [Issue identified
+          by Serguei Trouchelle]
+
 1.55      2010-03-12 11:44:05 EST5EDT
 
         - Preserve distfile through write() and read() 

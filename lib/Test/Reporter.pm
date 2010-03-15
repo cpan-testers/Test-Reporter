@@ -339,6 +339,12 @@ sub read {
         close REPORT or die __PACKAGE__, ": Can't close report file '$file': $!";
     }
 
+    # convert line endings
+    my $CR   = "\015";
+    my $LF   = "\012";
+    $buffer =~ s{$CR$LF}{$LF}g;
+    $buffer =~ s{$CR}{$LF}g;
+
     # parse out headers
     foreach my $line (split(/\n/, $buffer)) {
       if ($line =~ /^(.+):\s(.+)$/) {
