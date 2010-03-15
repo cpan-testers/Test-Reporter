@@ -5,6 +5,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+1.56      2010-03-14 23:26:00 EST5EDT
+
         - Convert line endings during read() [Issue identified
           by Serguei Trouchelle]
 
