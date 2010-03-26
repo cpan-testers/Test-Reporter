@@ -5,6 +5,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+1.57      2010-03-26 00:13:18 EST5EDT
+
         - Includes full 'perl -V' output, not just Config::mychanges
 
         - Adds new 'X-Test-Reporter-Perl' header with Perl version 
