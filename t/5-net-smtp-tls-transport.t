@@ -3,6 +3,8 @@
 use strict;
 use Test::More;
 
+$Test::Reporter::VERSION ||= 999; # dzil will set it for us on release
+
 # hack-mock Net::SMTP::TLS
 BEGIN {
     package Net::SMTP::TLS;

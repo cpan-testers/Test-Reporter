@@ -5,6 +5,12 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+        - Includes full 'perl -V' output, not just Config::mychanges
+
+        - Adds new 'X-Test-Reporter-Perl' header with Perl version 
+          and optional "RCx" suffix to positively identify tests from
+          RC Perls
+
         - Minimum perl version is now 5.006, matching the rest of the Perl toolchain
 
 1.56      2010-03-14 23:26:00 EST5EDT

@@ -135,6 +135,7 @@ sub send {
     my ($self, $report, $recipients) = @_;
     $recipients ||= [];
 
+    my $perl_version = $report->perl_version->{_version};
     my $helo          = $report->_maildomain(); # XXX: tight -- rjbs, 2008-04-06
     my $from          = $report->from();
     my $via           = $report->via();
@@ -217,6 +218,7 @@ sub send {
         if ( @$recipients ) { $smtp->datasend("Cc: $cc_str\n") or $die->() };
         $smtp->datasend("Message-ID: ", $report->message_id(), "\n") or $die->();
         $smtp->datasend("X-Reported-Via: Test::Reporter $Test::Reporter::VERSION$via\n") or $die->();
+        $smtp->datasend("X-Test-Reporter-Perl: $perl_version\n") or $die->();
         if ( $needs_qp ) {
             $smtp->datasend("MIME-Version: 1.0\n");
             $smtp->datasend("Content-Type: text/plain; charset=utf-8\n");

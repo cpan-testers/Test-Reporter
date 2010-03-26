@@ -3,6 +3,8 @@
 use strict;
 use Test::More;
 
+$Test::Reporter::VERSION ||= 999; # dzil will set it for us on release
+
 # hack-mock LWP::UserAgent
 BEGIN {
     $INC{"LWP/UserAgent.pm"} = 1;
@@ -61,6 +63,7 @@ $reporter->from($from);
 my $form = {
     key     => 123456789,
     via     => my $via = "Test::Reporter ${Test::Reporter::VERSION}",
+    perl_version    => $reporter->perl_version->{_version},
     from    => $from,
     subject => $reporter->subject(),
     report  => $reporter->report(),

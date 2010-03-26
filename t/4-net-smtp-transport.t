@@ -3,6 +3,8 @@
 use strict;
 use Test::More;
 
+$Test::Reporter::VERSION ||= 999; # dzil will set it for us on release
+
 # hack-mock Net::SMTP
 BEGIN {
     $INC{"Net/SMTP.pm"} = 1;
@@ -15,8 +17,9 @@ BEGIN {
     sub quit { return $Response }
     sub AUTOLOAD {
         my $self = shift;
-        if ( @_ ) { $Data{ $AUTOLOAD } = [ @_ ] }
-        return @{ $Data{ $AUTOLOAD } || [] };
+        (my $method = $AUTOLOAD) =~ s{^Net::SMTP::}{};
+        if ( @_ ) { push @{ $Data{ $method } }, @_ }
+        return 1;
     }
     
 }
@@ -27,7 +30,7 @@ my $from = 'johndoe@example.net';
 
 #--------------------------------------------------------------------------#
 
-plan tests => 4;
+plan tests => 5;
 
 require_ok( 'Test::Reporter' );
 
@@ -44,7 +47,6 @@ $reporter->distfile('ASPIERS/Mail-Freshmeat-1.20.tar.gz');
 $reporter->from($from);
 
 my $form = {
-    key     => 123456789,
     via     => my $via = "Test::Reporter ${Test::Reporter::VERSION}",
     from    => $from,
     subject => $reporter->subject(),
@@ -55,6 +57,10 @@ my $form = {
     local $Net::SMTP::Data;
     my $rc = $reporter->send;
     ok( $rc, "send() is true when successful" ) or diag $reporter->errstr;
+    ok( ( grep { /X-Test-Reporter-Perl: v5\.\d+\.\d+/ } @{$Net::SMTP::Data{datasend}}),
+      "saw X-Test-Reporter-Perl header"
+    );
+
 }
 
 {

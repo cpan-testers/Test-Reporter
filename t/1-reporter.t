@@ -6,9 +6,11 @@ use Test::More;
 use Test::Reporter;
 use Data::Dumper;
 
-plan tests => 131;
+$Test::Reporter::VERSION ||= 999; # dzil will set it for us on release
 
-my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
+plan tests => 129;
+
+my $distro = "Foo-Bar-1.23";
 my $distfile = "AUTHOR/" . $distro . ".tar.gz";
 
 my $reporter = Test::Reporter->new();
@@ -114,12 +116,13 @@ $reporter = Test::Reporter->new
 );
 isa_ok($reporter, 'Test::Reporter');
 my $file = $reporter->write();
-like($file, '/Test-Reporter/');
+like($file, "/$distro/");
 ok(-e $file);
 
 my $orig_subject = $reporter->subject;
 my $orig_from = $reporter->from;
 my $orig_report = $reporter->report;
+my $orig_perl_version = $reporter->perl_version->{_version};
 
 undef $reporter;
 
@@ -133,12 +136,13 @@ like($reporter->report,'/Summary of my/');
 is($reporter->grade, 'pass');
 is($reporter->distribution, $distro);
 is($reporter->distfile, $distfile);
-like($reporter->{_myconfig}, '/Summary of my/', "Regenerated _myconfig");
+like($reporter->perl_version->{_myconfig}, '/Summary of my/', "Regenerated _myconfig");
 
 # confirm roundtrip -- particularly newlines
 is($reporter->subject, $orig_subject);
 is($reporter->from, $orig_from);
 is($reporter->report, $orig_report);
+is($reporter->perl_version->{_version}, $orig_perl_version, 'perl version roundtrip');
 
 unlink $file;
 
@@ -148,23 +152,6 @@ my $no_version = $reporter->perl_version;
 my $same_version = $reporter->perl_version($^X);
 for my $field ( qw( _archname _osvers _myconfig) )
   { is( $no_version->{$field}, $same_version->{$field}); }
-
-# testing perl-version with a fake perl
-# create fake perl
-{
-    my $fh = FileHandle->new();
-    open( $fh, ">$alt_perl") or die "cannot create (fake) $alt_perl: $!";
-    # fake perl, still needs to grab the magick number!
-    print {$fh} qq{(\$m= join( '', \@ARGV))=~ s{\\D}{}g; print "\$m\nnew_archname\nnew_osvers\nnew_myconfig\n(several lines)"; };
-    close $fh;
-
-    my $alt_perl_version = $reporter->perl_version("$^X $alt_perl");
-    is( $reporter->perl_version->{_archname}, 'new_archname');
-    is( $reporter->perl_version->{_osvers}, 'new_osvers');
-    like( $reporter->perl_version->{_myconfig}, '/^new_myconfig\n\(several lines\)/s'); # VMS has trailing CRLF
-
-    1 while (unlink $alt_perl);
-}
 
 # testing error
 {

@@ -16,6 +16,7 @@ sub send {
     my ($self, $report, $recipients) = @_;
     $recipients ||= [];
 
+    my $perl_version = $report->perl_version->{_version};
     my $via = $report->via();
     my $msg = Mail::Send->new();
 
@@ -32,6 +33,7 @@ sub send {
     $msg->set('From', $report->from());
     $msg->subject($report->subject());
     $msg->add('X-Reported-Via', "Test::Reporter $Test::Reporter::VERSION$via");
+    $msg->add('X-Test-Reporter-Perl', $perl_version);
     $msg->add('Cc', $cc_str) if $cc_str;
 
     my $fh = $msg->open( @{ $self->{args} } );

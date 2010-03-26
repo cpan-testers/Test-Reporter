@@ -6,12 +6,14 @@ use Test::More;
 use Test::Reporter;
 use Data::Dumper;
 
+$Test::Reporter::VERSION ||= 999; # dzil will set it for us on release
+
 plan tests => 14;
 
 my $CR   = "\015";
 my $LF   = "\012";
 
-my $distro = sprintf "Test-Reporter-%s", $Test::Reporter::VERSION;
+my $distro = "Foo-Bar-1.23";
 my $distfile = "AUTHOR/" . $distro . ".tar.gz";
 
 my $reporter = Test::Reporter->new
@@ -23,7 +25,7 @@ my $reporter = Test::Reporter->new
 );
 isa_ok($reporter, 'Test::Reporter');
 my $file = $reporter->write();
-like($file, '/Test-Reporter/');
+like($file, "/$distro/");
 ok(-e $file);
 my $orig_subject = $reporter->subject;
 my $orig_from = $reporter->from;
@@ -56,7 +58,7 @@ like($reporter->report,'/Summary of my/');
 is($reporter->grade, 'pass');
 is($reporter->distribution, $distro);
 is($reporter->distfile, $distfile);
-like($reporter->{_myconfig}, '/Summary of my/', "Regenerated _myconfig");
+like($reporter->perl_version->{_myconfig}, '/Summary of my/', "Regenerated _myconfig");
 
 # confirm roundtrip -- particularly newlines
 is($reporter->subject, $orig_subject);

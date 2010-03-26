@@ -24,7 +24,7 @@ sub send {
   my $report_version = $report->VERSION;
   my $via = "$report_class $report_version";
   $via .= ', via ' . $report->via if $report->via;
-
+  my $perl_version = $report->perl_version->{_version};
   # post the report
   my $ua = LWP::UserAgent->new;
   $ua->timeout(60);
@@ -33,6 +33,7 @@ sub send {
   my $form = {
     key     => $self->{key},
     via     => $via,
+    perl_version => $perl_version,
     from    => $report->from,
     subject => $report->subject,
     report  => $report->report,

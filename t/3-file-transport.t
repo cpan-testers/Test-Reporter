@@ -5,6 +5,8 @@ use Test::More;
 use File::Temp;
 use File::Find;
 
+$Test::Reporter::VERSION ||= 999; # dzil will set it for us on release
+
 #--------------------------------------------------------------------------#
 
 my $from = 'johndoe@example.net';
