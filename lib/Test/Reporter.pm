@@ -1,7 +1,9 @@
-package Test::Reporter;
 use 5.006;
 use strict;
 use warnings;
+package Test::Reporter;
+# ABSTRACT: sends test results to cpan-testers@perl.org
+
 use Cwd;
 use Config;
 use Carp;
@@ -10,12 +12,10 @@ use FileHandle;
 use File::Temp;
 use Sys::Hostname;
 use Time::Local ();
-use vars qw($VERSION $AUTOLOAD $Tempfile $Report $DNS $Domain $Send);
+use vars qw($AUTOLOAD $Tempfile $Report $DNS $Domain $Send);
 use constant FAKE_NO_NET_DNS => 0;    # for debugging only
 use constant FAKE_NO_NET_DOMAIN => 0; # for debugging only
 use constant FAKE_NO_MAIL_SEND => 0;  # for debugging only
-
-$VERSION = '1.56';
 
 local $^W = 1;
 
@@ -730,10 +730,6 @@ sub _is_a_perl_release {
 1;
 
 __END__
-
-=head1 NAME
-
-Test::Reporter - sends test results to cpan-testers@perl.org
 
 =head1 SYNOPSIS
 

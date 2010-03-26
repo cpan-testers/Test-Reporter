@@ -1,10 +1,9 @@
 use strict;
 BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package Test::Reporter::Transport::File;
+# ABSTRACT: File transport for Test::Reporter
+
 use base 'Test::Reporter::Transport';
-use vars qw/$VERSION/;
-$VERSION = '1.56';
-$VERSION = eval $VERSION;
 
 sub new {
   my ($class, $dir) = @_;
@@ -24,10 +23,6 @@ sub send {
 1;
 
 __END__
-
-=head1 NAME
-
-Test::Reporter::Transport::File - File transport for Test::Reporter
 
 =head1 SYNOPSIS
 

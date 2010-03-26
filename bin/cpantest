@@ -1,36 +1,21 @@
 #!/usr/bin/perl -w
-
-# cpantest - sends test results to cpan-testers@perl.org
-#
-# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
-# Copyright (C) 2004, 2005 Richard Soderberg.
-# Copyright (C) 2002 Audrey Tang.
-# Copyright (C) 1999 Kurt Starsinic.
-# All rights reserved.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the same terms as Perl itself.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-
+use 5.006;
 use strict;
+use warnings;
+package main;
+# NAME: cpantest
+# ABSTRACT: Report test results of a package retrieved from CPAN
+
 use Cwd;
 use Getopt::Long;
 use File::Temp;
 use Test::Reporter;
 use vars qw(
-    $VERSION $Grade $Package $No_comment $Automatic $Comment_text $Comment_file
+    $Grade $Package $No_comment $Automatic $Comment_text $Comment_file
     %Grades $CC $Report $Tempfile $Subject $Reporter $From $Dump $Perl_version
     $Transport
 );
 
-$VERSION       = '1.56';
 ($Tempfile, $Report) = File::Temp::tempfile(UNLINK => 1);
 $Reporter      = Test::Reporter->new();
 %Grades        = (
@@ -276,10 +261,6 @@ sub log {
 
 __END__
 
-=head1 NAME
-
-B<cpantest> - Report test results of a package retrieved from CPAN
-
 =head1 DESCRIPTION
 
 B<cpantest> uniformly posts package test results in support of the
@@ -351,25 +332,5 @@ chosen for you automatically if not specified. See Test::Reporter docs for
 further information.
 
 =back
-
-=head1 AUTHORS
-
-This version of the 'cpantest' script was adapted by Adam J. Foxson
-E<lt>F<afoxson@pobox.com>E<gt> for Test::Reporter, and is based on
-Audrey Tang's E<lt>cpan@audreyt.orgE<gt> adaptations for
-CPANPLUS, which is in turn based upon the original script by Kurt
-Starsinic E<lt>F<Kurt.Starsinic@isinet.com>E<gt> with various patches
-from the CPAN Testers E<lt>F<cpan-testers@perl.org>E<gt>.
-
-=head1 COPYRIGHT
-
- Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Adam J. Foxson.
- Copyright (C) 2004, 2005 Richard Soderberg.
- Copyright (C) 2002 Audrey Tang.
- Copyright (C) 1999 Kurt Starsinic.
- All rights reserved.
-
- This program is free software; you may redistribute it
- and/or modify it under the same terms as Perl itself.
 
 =cut

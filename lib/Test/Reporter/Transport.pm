@@ -1,9 +1,7 @@
 use strict;
 BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package Test::Reporter::Transport;
-use vars qw/$VERSION/;
-$VERSION = '1.56';
-$VERSION = eval $VERSION;
+# ABSTRACT: base class for Test::Reporter transports
 
 sub new     { die "Not implemented" }
 
@@ -12,10 +10,6 @@ sub send    { die "Not implemented" }
 1;
 
 __END__
-
-=head1 NAME
-
-Test::Reporter::Transport - base class for Test::Reporter transports
 
 =head1 SYNOPSIS
 
