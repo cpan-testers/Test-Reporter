@@ -1,7 +1,7 @@
 package Test::Reporter;
-use 5.005;
+use 5.006;
 use strict;
-BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
+use warnings;
 use Cwd;
 use Config;
 use Carp;
