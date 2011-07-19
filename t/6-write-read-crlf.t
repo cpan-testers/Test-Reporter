@@ -2,7 +2,7 @@
 
 use strict;
 use FileHandle;
-use Test::More;
+use Test::More 0.88;
 use Test::Reporter;
 use Data::Dumper;
 
@@ -66,3 +66,5 @@ is($reporter->from, $orig_from);
 is($reporter->report, $orig_report);
 
 unlink $file;
+
+done_testing;

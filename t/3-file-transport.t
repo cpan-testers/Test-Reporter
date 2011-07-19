@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::More;
+use Test::More 0.88;
 use File::Temp;
 use File::Find;
 
@@ -13,8 +13,6 @@ my $from = 'johndoe@example.net';
 my $dir = File::Temp::tempdir( CLEANUP => 1 );
 
 #--------------------------------------------------------------------------#
-
-plan tests => 4;
 
 require_ok( 'Test::Reporter' );
 
@@ -46,3 +44,4 @@ find( sub {
 
 is( scalar @reports, 1, "found a report in the directory" );
 
+done_testing;

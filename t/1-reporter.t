@@ -2,13 +2,11 @@
 
 use strict;
 use FileHandle;
-use Test::More;
+use Test::More 0.88;
 use Test::Reporter;
 use Data::Dumper;
 
 $Test::Reporter::VERSION ||= 999; # dzil will set it for us on release
-
-plan tests => 120;
 
 my $distro = "Foo-Bar-1.23";
 my $distfile = "AUTHOR/" . $distro . ".tar.gz";
@@ -240,4 +238,4 @@ eval { $reporter->transport('Invalid'); };
 like($@, q{/could not load 'Test::Reporter::Transport::Invalid'/})
     or print "# $@\n";
 
-
+done_testing;
