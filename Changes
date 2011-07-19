@@ -5,6 +5,15 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+        - Deprecates email-transport related attributes and methods
+
+        - Adds new 'Null' transport as default
+
+        - Removes legacy transport classes
+          (See Test::Reporter::Transport::Legacy if needed)
+
+        - Removes 'cpantest' command line program
+
 1.57      2010-03-26 00:13:18 EST5EDT
 
         - Includes full 'perl -V' output, not just Config::mychanges
