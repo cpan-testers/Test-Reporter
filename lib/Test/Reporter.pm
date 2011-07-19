@@ -7,7 +7,6 @@ package Test::Reporter;
 use Cwd;
 use Config;
 use Carp;
-use Net::SMTP;
 use FileHandle;
 use File::Temp;
 use Sys::Hostname;
@@ -65,7 +64,7 @@ sub new {
         unless scalar @_ % 2 == 0;
 
     $self->_process_params(@_) if @_;
-    $self->transport('Net::SMTP') unless $self->transport();
+    $self->transport('Null') unless $self->transport();
     $self->_get_mx(@_) if $self->_have_net_dns();
 
     return $self;
@@ -199,6 +198,7 @@ sub transport {
 
     my @args = @_;
 
+    # XXX keep this for legacy support
     if ( @args && $transport eq 'Mail::Send' && ref $args[0] eq 'ARRAY' ) {
         # treat as old form of Mail::Send arguments and convert to list
         $self->transport_args(@{$args[0]});
@@ -263,7 +263,7 @@ sub send {
         return;
     }
 
-    my $transport_type  = $self->transport() || 'Net::SMTP';
+    my $transport_type  = $self->transport() || 'Null';
     my $transport_class = "Test::Reporter::Transport::$transport_type";
     my $transport = $transport_class->new( $self->transport_args() );
 
@@ -465,7 +465,8 @@ sub mx {
 sub mail_send_args {
     my $self = shift;
     warn __PACKAGE__, ": mail_send_args\n" if $self->debug();
-    croak __PACKAGE__, ": mail_send_args cannot be called unless Mail::Send is installed\n" unless $self->_have_mail_send();
+    croak __PACKAGE__, ": mail_send_args cannot be called unless Mail::Send is installed\n"
+      unless $self->_have_mail_send();
     if (@_) {
         my $mail_send_args = shift;
         croak __PACKAGE__, ": mail_send_args: array reference required\n" 
@@ -947,27 +948,17 @@ reports. Default is 120 seconds.
 =item * B<transport>
 
 Optional. Gets or sets the transport type. The transport type argument is 
-refers to a 'Test::Reporter::Transport' subclass.  The default is 'Net::SMTP',
-which uses the [Test::Reporter::Transport::Net::SMTP] class.
+refers to a 'Test::Reporter::Transport' subclass.  The default is 'Null',
+which uses the [Test::Reporter::Transport::Net::Null] class and does
+nothing when C<send> is called.
 
 You can add additional arguments after the transport
 selection.  These will be passed to the constructor of the lower-level
 transport. This can be used to great effect for all manner of fun and
 enjoyment. ;-) See C<transport_args>.
 
-If L<Net::SMTP::TLS> is used, 'Username' and 'Password' key-value transport
-arguments must be provided.
-
  $reporter->transport( 
-     'Net::SMTP::TLS', Username => 'jdoe', Password => '123' 
- );
-
-If the 'HTTP' transport is used, two additional arguments are required: 
-a URL to a L<Test::Reporter::HTTPGateway> compatible server and an (optional)
-API key.
-
- $reporter->transport( 
-     'HTTP', 'http://example.com/reporter-gateway/', '123456' 
+     'File', dir => '/tmp'
  );
 
 This is not designed to be an extensible platform upon which to build
@@ -1091,10 +1082,6 @@ Related Perl modules:
 =item * L<perl>
 
 =item * L<Config>
-
-=item * L<Net::SMTP>
-
-=item * L<Net::SMTP::TLS>
 
 =item * L<File::Spec>
 

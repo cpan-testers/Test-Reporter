@@ -36,31 +36,26 @@ A transport method is specified to Test::Reporter using the C<transport>
 option.  The C<transport> option expects just the module "suffix" that follows
 C<Test::Reporter::Transport>.  For example:
 
-    # use Test::Reporter::Transport::Net::SMTP for transport
+    # use Test::Reporter::Transport::Null for transport
     my $report = Test::Reporter->new(
-        transport => 'Net::SMTP'
-    );
-
-    # use Test::Reporter::Transport::Mail::Send for transport
-    my $report = Test::Reporter->new(
-        transport => 'Mail::Send'
+        transport => 'Null'
     );
 
 Configuration of the transport is specified with the C<transport_args>
 option:
 
     my $report = Test::Reporter->new(
-        transport => 'Net::SMTP::TLS',
-        transport_args => [ User => 'John', Password => '123' ],
+        transport => 'File',
+        transport_args => [ dir => '/tmp' ],
     );
 
 These may also be specified with the C<transport> or C<transport_args> methods:
 
-    $report->transport_args( User => 'John', Password => '123' );
+    $report->transport_args( dir => '/tmp' );
 
 These may also be combined in the C<transport> method itself:
 
-    $report->transport( 'Net::SMTP::TLS', User => 'John', Password => '123');
+    $report->transport( 'File', dir => '/tmp' );
 
 =head1 METHODS
 
@@ -82,7 +77,7 @@ is successfully created or undef if the object can not be created.
 The C<send> method MUST take a Test::Reporter object as its only argument.  It
 MUST return true if the report is successfully sent.  It SHOULD die with a
 message describing the failure if a report cannot be sent.  It MUST NOT return
-a true value if the report cannot be sent.  
+a true value if the report cannot be sent.
 
 =cut
 
