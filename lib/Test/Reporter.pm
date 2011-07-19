@@ -2,7 +2,7 @@ use 5.006;
 use strict;
 use warnings;
 package Test::Reporter;
-# ABSTRACT: sends test results to cpan-testers@perl.org
+# VERSION
 
 use Cwd;
 use Config;
@@ -761,8 +761,9 @@ sub _is_a_perl_release {
     return $perl =~ /^perl-?\d\.\d/;
 }
 
-# need a true value
 1;
+
+# ABSTRACT: sends test results to cpan-testers@perl.org
 
 __END__
 

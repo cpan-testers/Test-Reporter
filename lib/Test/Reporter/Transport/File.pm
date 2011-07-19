@@ -1,7 +1,7 @@
 use strict;
 BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package Test::Reporter::Transport::File;
-# ABSTRACT: File transport for Test::Reporter
+# VERSION
 
 use base 'Test::Reporter::Transport';
 
@@ -21,6 +21,8 @@ sub send {
 }
 
 1;
+
+# ABSTRACT: File transport for Test::Reporter
 
 __END__
 

@@ -1,13 +1,15 @@
 use strict;
 BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package Test::Reporter::Transport;
-# ABSTRACT: base class for Test::Reporter transports
+# VERSION
 
 sub new     { die "Not implemented" }
 
 sub send    { die "Not implemented" }
 
 1;
+
+# ABSTRACT: base class for Test::Reporter transports
 
 __END__
 

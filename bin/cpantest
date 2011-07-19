@@ -4,7 +4,7 @@ use strict;
 use warnings;
 package main;
 # NAME: cpantest
-# ABSTRACT: Report test results of a package retrieved from CPAN
+# VERSION
 
 use Cwd;
 use Getopt::Long;
@@ -258,6 +258,8 @@ sub log {
     print LOG "$Subject $time\n";
     close(LOG);
 }
+
+# ABSTRACT: Report test results of a package retrieved from CPAN
 
 __END__
 
