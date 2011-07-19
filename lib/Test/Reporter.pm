@@ -22,12 +22,10 @@ sub new {
     my $type  = shift;
     my $class = ref($type) || $type;
     my $self  = {
-        '_mx'                => ['mx.develooper.com'],
-        '_address'           => 'cpan-testers@perl.org',
         '_grade'             => undef,
         '_distribution'      => undef,
-        # XXX distfile => undef would break old clients :-( -- dagolden, 2009-03-30 
-        '_distfile'          => '', 
+        # XXX distfile => undef would break old clients :-( -- dagolden, 2009-03-30
+        '_distfile'          => '',
         '_report'            => undef,
         '_subject'           => undef,
         '_from'              => undef,
@@ -45,7 +43,10 @@ sub new {
         },
         '_transport'         => '',
         '_transport_args'    => [],
-        '_mail_send_args'    => '', # deprecated -> use _transport_args
+        # DEPRECATED ARGS
+        '_address'           => 'cpan-testers@perl.org',
+        '_mx'                => ['mx.develooper.com'],
+        '_mail_send_args'    => '',
     };
 
     bless $self, $class;
@@ -53,8 +54,8 @@ sub new {
     $self->{_perl_version}{_myconfig} = $self->_get_perl_V;
     $self->{_perl_version}{_version} = $self->_normalize_perl_version;
 
-    $self->{_attr} = {   
-        map {$_ => 1} qw(   
+    $self->{_attr} = {
+        map {$_ => 1} qw(
             _address _distribution _distfile _comments _errstr _via _timeout _debug _dir
         )
     };
@@ -111,14 +112,14 @@ sub _process_params {
         mx address grade distribution distfile from comments via timeout debug dir perl_version transport_args transport );
     my %defaults = map {$_ => 1} @defaults;
 
-    for my $param (keys %params) {   
+    for my $param (keys %params) {
         croak __PACKAGE__, ": new: parameter '$param' is invalid." unless
             exists $defaults{$param};
     }
-    
-    # XXX need to process transport_args directly rather than through 
+
+    # XXX need to process transport_args directly rather than through
     # the following -- store array ref directly
-    for my $param (keys %params) {   
+    for my $param (keys %params) {
         $self->$param($params{$param});
     }
 }
@@ -146,7 +147,7 @@ sub report {
     my $report;
     $report .= "This distribution has been tested as part of the CPAN Testers\n";
     $report .= "project, supporting the Perl programming language.  See\n";
-    $report .= "http://wiki.cpantesters.org/ for more information or email\n"; 
+    $report .= "http://wiki.cpantesters.org/ for more information or email\n";
     $report .= "questions to cpan-testers-discuss\@perl.org\n\n";
 
     if (not $self->{_comments}) {
@@ -192,7 +193,7 @@ sub transport {
     my $transport = shift;
 
     my $transport_class = "Test::Reporter::Transport::$transport";
-    unless ( eval "require $transport_class; 1" ) { 
+    unless ( eval "require $transport_class; 1" ) {
         croak __PACKAGE__ . ": could not load '$transport_class'\n$@\n";
     }
 
@@ -469,7 +470,7 @@ sub mail_send_args {
       unless $self->_have_mail_send();
     if (@_) {
         my $mail_send_args = shift;
-        croak __PACKAGE__, ": mail_send_args: array reference required\n" 
+        croak __PACKAGE__, ": mail_send_args: array reference required\n"
             if ref $mail_send_args ne 'ARRAY';
         $self->transport_args(@$mail_send_args);
     }
@@ -481,7 +482,7 @@ sub mail_send_args {
 sub transport_args {
     my $self = shift;
     warn __PACKAGE__, ": transport_args\n" if $self->debug();
-    
+
     if (@_) {
         $self->{_transport_args} = ref $_[0] eq 'ARRAY' ? $_[0] : [ @_ ];
     }
@@ -499,7 +500,7 @@ sub perl_version  {
 
     if( @_) {
         my $perl = shift;
-        my $q = $self->_get_sh_quote; 
+        my $q = $self->_get_sh_quote;
         my $magick = int(rand(1000));                                 # just to check that we get a valid result back
         my $cmd  = "$perl -MConfig -e$q print qq{$magick\n\$Config{archname}\n\$Config{osvers}\n};$q";
         if($^O eq 'VMS'){
@@ -522,7 +523,7 @@ sub perl_version  {
 sub _get_perl_V {
     my $self = shift;
     my $perl ||= $^X;
-    my $q = $self->_get_sh_quote; 
+    my $q = $self->_get_sh_quote;
     my $cmdv = "$perl -V";
     if($^O eq 'VMS'){
         my $sh = $Config{'sh'};
@@ -544,7 +545,7 @@ sub AUTOLOAD {
     }
 
     my $code = q{
-        sub {   
+        sub {
             my $self = shift;
             warn __PACKAGE__, ": METHOD\n" if $self->{_debug};
             $self->{_METHOD} = shift if @_;
@@ -622,15 +623,15 @@ sub _prompt {
 }
 
 # From Mail::Util 1.74 (c) 1995-2001 Graham Barr (c) 2002-2005 Mark Overmeer
-{   
+{
   # cache the mail domain, so we don't try to resolve this *every* time
   # (thanks you kane)
-  my $domain;     
+  my $domain;
 
   sub _maildomain {
       my $self = shift;
       warn __PACKAGE__, ": _maildomain\n" if $self->debug();
-      
+
       # use cached value if set
       return $domain if defined $domain;
 
@@ -685,7 +686,7 @@ sub _prompt {
           my $host;
 
               for $host (qw(mailhost smtp localhost)) {
-              
+
                   # default timeout is 120, which is Very Very Long, so lower
                   # it to 5 seconds. Total slowdown will not be more than
                   # 15 seconds ( 5 x @hosts ) --kane
@@ -772,7 +773,10 @@ __END__
 
   use Test::Reporter;
 
-  my $reporter = Test::Reporter->new();
+  my $reporter = Test::Reporter->new(
+      transport => 'File',
+      transport_args => [ dir => '/tmp' ],
+  );
 
   $reporter->grade('pass');
   $reporter->distribution('Mail-Freshmeat-1.20');
@@ -780,7 +784,10 @@ __END__
 
   # or
 
-  my $reporter = Test::Reporter->new();
+  my $reporter = Test::Reporter->new(
+      transport => 'File',
+      transport_args => [ dir => '/tmp' ],
+  );
 
   $reporter->grade('fail');
   $reporter->distribution('Mail-Freshmeat-1.20');
@@ -791,6 +798,8 @@ __END__
   # or
 
   my $reporter = Test::Reporter->new(
+      transport => 'File',
+      transport_args => [ dir => '/tmp' ],
       grade => 'fail',
       distribution => 'Mail-Freshmeat-1.20',
       from => 'whoever@wherever.net (Whoever Wherever)',
@@ -799,74 +808,45 @@ __END__
   );
   $reporter->send() || die $reporter->errstr();
 
+
 =head1 DESCRIPTION
 
 Test::Reporter reports the test results of any given distribution to the CPAN
 Testers project. Test::Reporter has wide support for various perl5's and
-platforms. 
+platforms.
 
-=head1 METHODS
+CPAN Testers no longer receives test reports by email, but reports still
+resemble an email message. This module has numerous legacy "features"
+left over from the days of email transport.
 
-=over 4
+=head2 Transport mechanism
 
-=item * B<address>
+The choice of transport is set with the C<transport> argument.  CPAN Testers
+should usually install L<Test::Reporter::Transport::Metabase> and use
+'Metabase' as the C<transport>.  See that module for necessary transport
+arguments.  Advanced testers may wish to test on a machine different from the
+one used to send reports.  Consult the L<CPAN Testers
+Wiki|http://wiki.cpantesters.org/> for examples using other transport classes.
 
-Optional. Gets or sets the e-mail address that the reports will be
-sent to. By default, this is set to cpan-testers@perl.org. You shouldn't
-need this unless the CPAN Tester's change the e-mail address to send
-report's to.
+The legacy email-based transports have been split out into a separate
+L<Test::Reporter::Transport::Legacy> distribution and methods solely
+related to email have been deprecated.
 
-=item * B<comments>
+=head1 ATTRIBUTES
 
-Optional. Gets or sets the comments on the test report. This is most
-commonly used for distributions that did not pass a 'make test'.
+=head2 Required attributes
 
-=item * B<debug>
-
-Optional. Gets or sets the value that will turn debugging on or off.
-Debug messages are sent to STDERR. 1 for on, 0 for off. Debugging
-generates very verbose output and is useful mainly for finding bugs
-in Test::Reporter itself.
-
-=item * B<dir>
-
-Optional. Defaults to the current working directory. This method specifies
-the directory that write() writes test report files to.
+=over
 
 =item * B<distribution>
 
 Gets or sets the name of the distribution you're working on, for example
 Foo-Bar-0.01. There are no restrictions on what can be put here.
 
-=item * B<edit_comments>
-
-Optional. Allows one to interactively edit the comments within a text
-editor. comments() doesn't have to be first specified, but it will work
-properly if it was.  Accepts an optional hash of arguments:
-
-=over 4
-
-=item * B<suffix>
-
-Optional. Allows one to specify the suffix ("extension") of the temp
-file used by B<edit_comments>.  Defaults to '.txt'.
-
-=back
-
-=item * B<errstr>
-
-Returns an error message describing why something failed. You must check
-errstr() on a send() in order to be guaranteed delivery. This is optional
-if you don't intend to use Test::Reporter to send reports via e-mail,
-see 'send' below for more information.
-
 =item * B<from>
 
-Optional. Gets or sets the e-mail address of the individual submitting
-the test report, i.e. "afoxson@pobox.com (Adam Foxson)". This is
-mostly of use to testers running under Windows, since Test::Reporter
-will usually figure this out automatically. Alternatively, you can use
-the MAILADDRESS environmental variable to accomplish the same.
+Gets or sets the e-mail address of the individual submitting
+the test report, i.e. "John Doe <jdoe@example.com>".
 
 =item * B<grade>
 
@@ -878,86 +858,26 @@ result. This must be one of:
   pass      all tests passed
   fail      one or more tests failed
   na        distribution will not work on this platform
-  unknown   tests did not exist or could not be run 
+  unknown   tests did not exist or could not be run
 
-=item * B<mail_send_args> -- DEPRECATED
+=back
 
-Kept for backwards compatibility.  Use C<transport_args> instead.
+=head2 Transport attributes
 
-Optional. If you have MailTools installed and you want to have it
-behave in a non-default manner, parameters that you give this
-method will be passed directly to the constructor of
-Mail::Mailer. See L<Mail::Mailer> and L<Mail::Send> for details.
-
-=item * B<message_id>
-
-Returns an automatically generated Message ID. This Message ID will later
-be included as an outgoing mail header in the test report e-mail. This was
-included to conform to local mail policies at perl.org. This method courtesy
-of Email::MessageID.
-
-=item * B<mx>
-
-Optional. Gets or sets the mail exchangers that will be used to send
-the test reports. If you override the default values make sure you
-pass in a reference to an array. By default, this contains the MX's
-known at the time of release for perl.org. If you do not have
-Mail::Send installed (thus using the Net::SMTP interface) and do have
-Net::DNS installed it will dynamically retrieve the latest MX's. You
-really shouldn't need to use this unless the hardcoded MX's have
-become wrong and you don't have Net::DNS installed.
-
-=item * B<new>
-
-This constructor returns a Test::Reporter object. It will optionally accept
-named parameters for: mx, address, grade, distribution, from, comments,
-via, timeout, debug, dir, perl_version, transport and transport_args.
-
-=item * B<perl_version>
-
-Returns a hashref containing _archname, _osvers, and _myconfig based upon the
-perl that you are using. Alternatively, you may supply a different perl (path
-to the binary) as an argument, in which case the supplied perl will be used as
-the basis of the above data.
-
-=item * B<report>
-
-Returns the actual content of a report, i.e.
-"This distribution has been tested as part of the cpan-testers...". 
-'comments' must first be specified before calling this method, if you have
-comments to make and expect them to be included in the report.
-
-=item * B<send>
-
-Sends the test report to cpan-testers@perl.org.  You must check errstr() on a
-send() in order to be guaranteed delivery. Technically, send() is optional, as
-you may use Test::Reporter to only obtain the 'subject' and 'report' without
-sending an e-mail at all, although that would be unusual.
-
-=item * B<subject>
-
-Returns the subject line of a report, i.e.
-"PASS Mail-Freshmeat-1.20 Darwin 6.0". 'grade' and 'distribution' must
-first be specified before calling this method.
-
-=item * B<timeout>
-
-Optional. Gets or sets the timeout value for the submission of test
-reports. Default is 120 seconds. 
+=over
 
 =item * B<transport>
 
-Optional. Gets or sets the transport type. The transport type argument is 
+Gets or sets the transport type. The transport type argument is
 refers to a 'Test::Reporter::Transport' subclass.  The default is 'Null',
-which uses the [Test::Reporter::Transport::Net::Null] class and does
+which uses the L<Test::Reporter::Transport::Null> class and does
 nothing when C<send> is called.
 
 You can add additional arguments after the transport
 selection.  These will be passed to the constructor of the lower-level
-transport. This can be used to great effect for all manner of fun and
-enjoyment. ;-) See C<transport_args>.
+transport. See C<transport_args>.
 
- $reporter->transport( 
+ $reporter->transport(
      'File', dir => '/tmp'
  );
 
@@ -970,24 +890,123 @@ release of Test::Reporter, which will reside in the CPAN::Testers namespace.
 Optional.  Gets or sets transport arguments that will used in the constructor
 for the selected transport, as appropriate.
 
+=back
+
+=head2 Optional attributes
+
+=over
+
+=item * B<comments>
+
+Gets or sets the comments on the test report. This is most
+commonly used for distributions that did not pass a 'make test'.
+
+=item * B<debug>
+
+Gets or sets the value that will turn debugging on or off.
+Debug messages are sent to STDERR. 1 for on, 0 for off. Debugging
+generates very verbose output and is useful mainly for finding bugs
+in Test::Reporter itself.
+
+=item * B<dir>
+
+Defaults to the current working directory. This method specifies
+the directory that write() writes test report files to.
+
+=item * B<timeout>
+
+Gets or sets the timeout value for the submission of test
+reports. Default is 120 seconds.
+
 =item * B<via>
 
-Optional. Gets or sets the value that will be appended to
+Gets or sets the value that will be appended to
 X-Reported-Via, generally this is useful for distributions that use
 Test::Reporter to report test results. This would be something
 like "CPANPLUS 0.036".
 
+=back
+
+=head2 Deprecated attributes
+
+CPAN Testers no longer uses email for submitting reports.  These attributes
+are deprecated.
+
+=over
+
+=item * B<address>
+
+=item * B<mail_send_args>
+
+=item * B<mx>
+
+=back
+
+=head1 METHODS
+
+=over
+
+=item * B<new>
+
+This constructor returns a Test::Reporter object.
+
+=item * B<perl_version>
+
+Returns a hashref containing _archname, _osvers, and _myconfig based upon the
+perl that you are using. Alternatively, you may supply a different perl (path
+to the binary) as an argument, in which case the supplied perl will be used as
+the basis of the above data.
+
+=item * B<subject>
+
+Returns the subject line of a report, i.e.
+"PASS Mail-Freshmeat-1.20 Darwin 6.0". 'grade' and 'distribution' must
+first be specified before calling this method.
+
+=item * B<report>
+
+Returns the actual content of a report, i.e.
+"This distribution has been tested as part of the cpan-testers...".
+'comments' must first be specified before calling this method, if you have
+comments to make and expect them to be included in the report.
+
+=item * B<send>
+
+Sends the test report to cpan-testers@perl.org via the defined C<transport>
+mechanism.  You must check errstr() on a send() in order to be guaranteed
+delivery.
+
+=item * B<edit_comments>
+
+Allows one to interactively edit the comments within a text
+editor. comments() doesn't have to be first specified, but it will work
+properly if it was.  Accepts an optional hash of arguments:
+
+=over
+
+=item * B<suffix>
+
+Optional. Allows one to specify the suffix ("extension") of the temp
+file used by B<edit_comments>.  Defaults to '.txt'.
+
+=back
+
+=item * B<errstr>
+
+Returns an error message describing why something failed. You must check
+errstr() on a send() in order to be guaranteed delivery.
+
 =item * B<write and read>
 
-These methods are used in situations where you test on a machine that has
-port 25 blocked and there is no local MTA. You use write() on the machine
-that you are testing from, transfer the written test reports from the
-testing machine to the sending machine, and use read() on the machine that
-you actually want to submit the reports from. write() will write a file in
-an internal format that contains 'From', 'Subject', and the content of the
-report. The filename will be represented as:
-grade.distribution.archname.osvers.seconds_since_epoch.pid.rpt. write()
-uses the value of dir() if it was specified, else the cwd.
+These methods are used in situations where you wish to save reports locally
+rather than transmitting them to CPAN Testers immediately.  You use write() on
+the machine that you are testing from, transfer the written test reports from
+the testing machine to the sending machine, and use read() on the machine that
+you actually want to submit the reports from. write() will write a file in an
+internal format that contains 'From', 'Subject', and the content of the report.
+The filename will be represented as:
+grade.distribution.archname.osvers.seconds_since_epoch.pid.rpt. write() uses
+the value of dir() if it was specified, else the cwd.
 
 On the machine you are testing from:
 
@@ -1003,7 +1022,7 @@ On the machine you are submitting from:
   my $reporter;
   $reporter = Test::Reporter->new()->read(
     'pass.Test-Reporter-1.16.i686-linux.2.2.16.1046685296.14961.rpt'
-  )->send() || die $reporter->errstr(); 
+  )->send() || die $reporter->errstr();
 
 write() also accepts an optional filehandle argument:
 
@@ -1012,97 +1031,28 @@ write() also accepts an optional filehandle argument:
 
 =back
 
+=head2 Deprecated methods
+
+=over
+
+=item * B<message_id>
+
+=back
+
 =head1 CAVEATS
 
-If you experience a long delay sending mail with Test::Reporter, you may be 
-experiencing a wait as Test::Reporter attempts to determine your email 
-domain.  Setting the MAILDOMAIN environment variable will avoid this delay.
+If you experience a long delay sending reports with Test::Reporter, you may be
+experiencing a wait as Test::Reporter attempts to determine your email
+address.  Always use the C<from> parameter to set your email address
+explicitly.
 
 =head1 SEE ALSO
 
 For more about CPAN Testers:
 
-=over 4
-
-=item * L<http://www.cpantesters.org/>
-
-CPAN Testers reports
-
-=item * L<http://wiki.cpantesters.org/>
-
-CPAN Testers wiki
-
-=back
-
-Test::Reporter itself--as a project--also has several links for your visiting
-enjoyment:
-
-=over 4
-
-=item * L<http://code.google.com/p/test-reporter/>
-
-Test::Reporter's master project page
-
-=item * L<http://groups.google.com/group/test-reporter>
-
-Discussion group for Test::Reporter
-
-=item * L<http://code.google.com/p/test-reporter/w/list>
-
-The Wiki for Test::Reporter
-
-=item * L<http://github.org/dagolden/test-reporter>
-
-Test::Reporter's public git source code repository.
-
-=item * L<http://search.cpan.org/dist/Test-Reporter/>
-
-Test::Reporter on CPAN
-
-=item * L<http://code.google.com/p/test-reporter/issues/list>
-
-UNFORTUNATELY, WE ARE UNABLE TO ACCEPT TICKETS FILED WITH RT.
-
-Please file all bug reports and enhancement requests at our Google Code issue
-tracker. Thank you for your support and understanding.
-
-=item * L<http://backpan.cpan.org/authors/id/F/FO/FOX/>
-
-=item * L<http://backpan.cpan.org/authors/id/A/AF/AFOXSON/>
-
-If you happen to--for some strange reason--be looking for primordial versions
-of Test::Reporter, you can almost certainly find them at the above 2 links.
-
-=back
-
-Related Perl modules:
-
-=over 4
-
-=item * L<perl>
-
-=item * L<Config>
-
-=item * L<File::Spec>
-
-=item * L<File::Temp>
-
-=item * L<Net::Domain>
-
-This is optional. If it's installed Test::Reporter will try even
-harder at guessing your mail domain.
-
-=item * L<Net::DNS>
-
-This is optional. If it's installed Test::Reporter will dynamically
-retrieve the mail exchangers for perl.org, instead of relying on the
-MX's known at the time of this release.
-
-=item * L<Test::Reporter::HTTPGateway>
-
-This is optional.  It provides a web API for the 'HTTP' transport method.
-
-=back
+=for :list
+* L<CPAN Testers reports|http://www.cpantesters.org/>
+* L<CPAN Testers wiki|http://wiki.cpantesters.org/>
 
 =cut
 
