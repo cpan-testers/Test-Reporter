@@ -775,7 +775,7 @@ __END__
 
   my $reporter = Test::Reporter->new(
       transport => 'File',
-      transport_args => [ dir => '/tmp' ],
+      transport_args => [ '/tmp' ],
   );
 
   $reporter->grade('pass');
@@ -786,7 +786,7 @@ __END__
 
   my $reporter = Test::Reporter->new(
       transport => 'File',
-      transport_args => [ dir => '/tmp' ],
+      transport_args => [ '/tmp' ],
   );
 
   $reporter->grade('fail');
@@ -799,7 +799,7 @@ __END__
 
   my $reporter = Test::Reporter->new(
       transport => 'File',
-      transport_args => [ dir => '/tmp' ],
+      transport_args => [ '/tmp' ],
       grade => 'fail',
       distribution => 'Mail-Freshmeat-1.20',
       from => 'whoever@wherever.net (Whoever Wherever)',
@@ -878,7 +878,7 @@ selection.  These will be passed to the constructor of the lower-level
 transport. See C<transport_args>.
 
  $reporter->transport(
-     'File', dir => '/tmp'
+     'File', '/tmp'
  );
 
 This is not designed to be an extensible platform upon which to build
