@@ -522,7 +522,7 @@ sub perl_version  {
 
 sub _get_perl_V {
     my $self = shift;
-    my $perl ||= $^X;
+    my $perl = shift || $^X;
     my $q = $self->_get_sh_quote;
     my $cmdv = "$perl -V";
     if($^O eq 'VMS'){
