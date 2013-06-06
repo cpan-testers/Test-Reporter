@@ -193,7 +193,7 @@ sub transport {
     my $transport = shift;
 
     my $transport_class = "Test::Reporter::Transport::$transport";
-    unless ( eval "require $transport_class; 1" ) {
+    unless ( eval "require $transport_class; 1" ) { ## no critic
         croak __PACKAGE__ . ": could not load '$transport_class'\n$@\n";
     }
 
@@ -236,9 +236,9 @@ sub edit_comments {
     my $comments;
     {
         local $/;
-        open FH, $Report or die __PACKAGE__, ": Can't open comment file '$Report': $!";
-        $comments = <FH>;
-        close FH or die __PACKAGE__, ": Can't close comment file '$Report': $!";
+        open my $fh, "<", $Report or die __PACKAGE__, ": Can't open comment file '$Report': $!";
+        $comments = <$fh>;
+        close $fh or die __PACKAGE__, ": Can't close comment file '$Report': $!";
     }
 
     chomp $comments;
@@ -319,7 +319,7 @@ sub write {
 
         warn $file if $self->debug();
         $fh = FileHandle->new();
-        open $fh, ">$file" or die __PACKAGE__, ": Can't open report file '$file': $!";
+        open $fh, ">", $file or die __PACKAGE__, ": Can't open report file '$file': $!";
     }
     print $fh "From: $from\n";
     if ($distfile ne '') {
@@ -348,9 +348,9 @@ sub read {
 
     {
         local $/;
-        open REPORT, $file or die __PACKAGE__, ": Can't open report file '$file': $!";
-        $buffer = <REPORT>;
-        close REPORT or die __PACKAGE__, ": Can't close report file '$file': $!";
+        open my $fh, "<", $file or die __PACKAGE__, ": Can't open report file '$file': $!";
+        $buffer = <$fh>;
+        close $fh or die __PACKAGE__, ": Can't close report file '$file': $!";
     }
 
     # convert line endings
@@ -557,7 +557,7 @@ sub AUTOLOAD {
 
     {
         no strict 'refs';
-        *$AUTOLOAD = eval $code;
+        *$AUTOLOAD = eval $code; ## no critic
     }
 
     goto &$AUTOLOAD;
@@ -640,7 +640,6 @@ sub _prompt {
         return $domain = $ENV{MAILDOMAIN};
       }
 
-      local *CF;
       local $_;
 
       my @sendmailcf = qw(
@@ -649,15 +648,15 @@ sub _prompt {
 
       my $config = (grep(-r, map("$_/sendmail.cf", @sendmailcf)))[0];
 
-      if (defined $config && open(CF, $config)) {
+      if (defined $config && open(my $cf, "<", $config)) {
           my %var;
-          while (<CF>) {
+          while (<$cf>) {
               if (my ($v, $arg) = /^D([a-zA-Z])([\w.\$\-]+)/) {
                   $arg =~ s/\$([a-zA-Z])/exists $var{$1} ? $var{$1} : '$'.$1/eg;
                   $var{$v} = $arg;
               }
           }
-          close(CF) || die $!;
+          close($cf) || die $!;
           $domain = $var{j} if defined $var{j};
           $domain = $var{M} if defined $var{M};
 
@@ -669,35 +668,33 @@ sub _prompt {
           return $domain if (defined $domain && $domain !~ /\$/);
       }
 
-      if (open(CF, "/usr/lib/smail/config")) {
-          while (<CF>) {
+      if (open(my $cf, "<", "/usr/lib/smail/config")) {
+          while (<$cf>) {
               if (/\A\s*hostnames?\s*=\s*(\S+)/) {
                   $domain = (split(/:/,$1))[0];
                   undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
                   last if defined $domain and $domain;
               }
           }
-          close(CF) || die $!;
+          close($cf) || die $!;
 
           return $domain if defined $domain;
       }
 
       if (eval {require Net::SMTP}) {
-          my $host;
+          for my $host (qw(mailhost smtp localhost)) {
 
-              for $host (qw(mailhost smtp localhost)) {
+            # default timeout is 120, which is Very Very Long, so lower
+            # it to 5 seconds. Total slowdown will not be more than
+            # 15 seconds ( 5 x @hosts ) --kane
+            my $smtp = eval {Net::SMTP->new($host, Timeout => 5)};
 
-                  # default timeout is 120, which is Very Very Long, so lower
-                  # it to 5 seconds. Total slowdown will not be more than
-                  # 15 seconds ( 5 x @hosts ) --kane
-                  my $smtp = eval {Net::SMTP->new($host, Timeout => 5)};
-
-              if (defined $smtp) {
-                  $domain = $smtp->domain;
-                  $smtp->quit;
-                  undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
-                  last if defined $domain and $domain;
-              }
+            if (defined $smtp) {
+                $domain = $smtp->domain;
+                $smtp->quit;
+                undef $domain if $^O eq 'darwin' && $domain =~ /\.local$/;
+                last if defined $domain and $domain;
+            }
           }
       }
 
