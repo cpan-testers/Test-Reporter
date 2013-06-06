@@ -5,6 +5,12 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+
+        [FIXED]
+
+        - Fixed bug in finding right perl for -V output
+          [rt.cpan.org #85823]
+
 1.58      2011-07-19 12:07:53 America/New_York
 
         - Deprecates email-transport related attributes and methods
