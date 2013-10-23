@@ -367,9 +367,10 @@ sub read {
           $self->{_from} = $content;
         } elsif ($header eq "Subject") {
           $self->{_subject} = $content;
-          my ($grade, $distribution) = (split /\s/, $content)[0,1];
+          my ($grade, $distribution, $archname) = (split /\s/, $content)[0..2];
           $self->{_grade} = lc $grade;
           $self->{_distribution} = $distribution;
+          $self->{_perl_version}{_archname} = $archname;
           $self->{_subject_lock} = 1;
         } elsif ($header eq "X-Test-Reporter-Distfile") {
           $self->{_distfile} = $content;
