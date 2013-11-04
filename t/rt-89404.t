@@ -25,6 +25,6 @@ EOF
 $ft->flush;
 my $file = $ft->filename;
 my $r = Test::Reporter->new(
-                            transport => 'Metabase',
+                            transport => 'Null',
 )->read($file);
 is $r->{_perl_version}{_archname}, "amd64-freebsd";
