@@ -5,6 +5,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+1.60      2013-11-04 13:49:54 America/New_York
+
         [FIXED]
 
         - read() now fixes up the architecture name
