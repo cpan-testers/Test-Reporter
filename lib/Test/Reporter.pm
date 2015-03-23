@@ -523,7 +523,7 @@ sub perl_version  {
 
 sub _get_perl_V {
     my $self = shift;
-    my $perl = shift || $^X;
+    my $perl = shift || qq{"$^X"};
     my $q = $self->_get_sh_quote;
     my $cmdv = "$perl -V";
     if($^O eq 'VMS'){
@@ -953,7 +953,10 @@ This constructor returns a Test::Reporter object.
 Returns a hashref containing _archname, _osvers, and _myconfig based upon the
 perl that you are using. Alternatively, you may supply a different perl (path
 to the binary) as an argument, in which case the supplied perl will be used as
-the basis of the above data.
+the basis of the above data. Make sure you protect it from the shell in
+case there are spaces in the path:
+
+  $reporter->perl_version(qq{"$^X"});
 
 =item * B<subject>
 

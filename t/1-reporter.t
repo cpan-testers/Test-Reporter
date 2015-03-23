@@ -147,7 +147,7 @@ unlink $file;
 # testing perl-version with the current perl
 my $alt_perl = 'alt_perl.pl';
 my $no_version = $reporter->perl_version;
-my $same_version = $reporter->perl_version($^X);
+my $same_version = $reporter->perl_version(qq{"$^X"});
 for my $field ( qw( _archname _osvers _myconfig) )
   { is( $no_version->{$field}, $same_version->{$field}); }
 
@@ -159,7 +159,7 @@ for my $field ( qw( _archname _osvers _myconfig) )
     print {$fh} qq{print "booh"; };
     close $fh;
 
-    eval { $reporter->perl_version( "$^X $alt_perl"); };
+    eval { $reporter->perl_version( qq{"$^X" $alt_perl}); };
     like($@, q{/^Test::Reporter: cannot get perl version info from/});
     1 while (unlink $alt_perl);
 }
