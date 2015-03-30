@@ -2,7 +2,8 @@ use 5.006;
 use strict;
 use warnings;
 package Test::Reporter;
-# VERSION
+
+our $VERSION = '1.61';
 
 use Cwd;
 use Config;

@@ -1,7 +1,8 @@
 use strict;
 BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package Test::Reporter::Transport;
-# VERSION
+
+our $VERSION = '1.61';
 
 sub new     { die "Not implemented" }
 
