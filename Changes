@@ -5,6 +5,8 @@ http://github.com/dagolden/test-reporter/commits/master
 
 {{$NEXT}}
 
+1.61      2015-03-30 10:13:06-04:00 America/New_York (TRIAL RELEASE)
+
         [FIXED}
 
         - protect whitespace in perl path from shell
