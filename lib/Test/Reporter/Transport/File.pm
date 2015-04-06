@@ -2,7 +2,7 @@ use strict;
 BEGIN{ if (not $] < 5.006) { require warnings; warnings->import } }
 package Test::Reporter::Transport::File;
 
-our $VERSION = '1.62'; # TRIAL
+our $VERSION = '1.63';
 
 use base 'Test::Reporter::Transport';
 

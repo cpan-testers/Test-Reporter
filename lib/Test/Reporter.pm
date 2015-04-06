@@ -3,7 +3,7 @@ use strict;
 use warnings;
 package Test::Reporter;
 
-our $VERSION = '1.62'; # TRIAL
+our $VERSION = '1.63';
 
 use Cwd;
 use Config;
