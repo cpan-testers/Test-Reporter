@@ -67,7 +67,9 @@ sub new {
 
     $self->_process_params(@_) if @_;
     $self->transport('Null') unless $self->transport();
-    $self->_get_mx(@_) if $self->_have_net_dns();
+    if ($self->address ne 'cpan-testers@perl.org') { #load Net::DNS only for non-deprecated address
+        $self->_get_mx(@_) if $self->_have_net_dns();
+    }
 
     return $self;
 }
